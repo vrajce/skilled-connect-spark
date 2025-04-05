@@ -71,7 +71,7 @@ const staggerContainer = {
 const faqs = [
   {
     question: 'How do I book a service on SkilledConnect?',
-    answer: 'Booking a service is simple. Browse our categories or search for the service you need, select a provider based on reviews and ratings, choose your preferred date and time, and confirm your booking. You'll receive instant confirmation and can track your booking status in your account.'
+    answer: 'Booking a service is simple. Browse our categories or search for the service you need, select a provider based on reviews and ratings, choose your preferred date and time, and confirm your booking. You\'ll receive instant confirmation and can track your booking status in your account.'
   },
   {
     question: 'How are service providers verified?',
@@ -79,7 +79,7 @@ const faqs = [
   },
   {
     question: 'What payment methods are accepted?',
-    answer: 'We accept multiple payment methods including credit/debit cards, UPI, net banking, and digital wallets. All payments are secure and you'll only be charged after the service is completed to your satisfaction.'
+    answer: 'We accept multiple payment methods including credit/debit cards, UPI, net banking, and digital wallets. All payments are secure and you\'ll only be charged after the service is completed to your satisfaction.'
   },
   {
     question: 'Can I reschedule or cancel my booking?',
@@ -91,7 +91,7 @@ const faqs = [
   },
   {
     question: 'Is there a money-back guarantee?',
-    answer: 'Yes, we offer a satisfaction guarantee. If you're not satisfied with the service provided, you can raise a dispute within 24 hours of service completion, and our customer support team will help resolve the issue.'
+    answer: 'Yes, we offer a satisfaction guarantee. If you\'re not satisfied with the service provided, you can raise a dispute within 24 hours of service completion, and our customer support team will help resolve the issue.'
   },
   {
     question: 'How are service providers rated?',

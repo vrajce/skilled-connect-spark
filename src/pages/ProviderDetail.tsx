@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -150,12 +149,12 @@ My services include bridal mehendi, engagement designs, party mehendi, and custo
       image: 'https://randomuser.me/api/portraits/women/26.jpg',
       rating: 4,
       date: '3 months ago',
-      comment: 'Great service and beautiful designs! Priya was on time and very professional. The only reason I'm not giving 5 stars is because the color didn't last as long as expected, but the designs were beautiful.'
+      comment: 'Great service and beautiful designs! Priya was on time and very professional. The only reason I\'m not giving 5 stars is because the color didn\'t last as long as expected, but the designs were beautiful.'
     },
   ],
   faqs: [
     {
-      question: 'Do you travel to the client's location?',
+      question: 'Do you travel to the client\'s location?',
       answer: 'Yes, I provide at-home services within Delhi NCR. For locations outside this area, additional travel charges may apply.'
     },
     {
@@ -164,7 +163,7 @@ My services include bridal mehendi, engagement designs, party mehendi, and custo
     },
     {
       question: 'What type of henna do you use?',
-      answer: 'I use 100% natural organic henna paste without any chemicals or additives. It's safe for all skin types and gives a dark rich color.'
+      answer: 'I use 100% natural organic henna paste without any chemicals or additives. It\'s safe for all skin types and gives a dark rich color.'
     },
     {
       question: 'Do you offer group discounts?',

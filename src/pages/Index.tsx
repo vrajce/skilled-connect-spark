@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -130,7 +129,7 @@ const testimonials = [
     name: 'Meera Desai',
     image: 'https://randomuser.me/api/portraits/women/63.jpg',
     role: 'Event Planner',
-    content: 'I found an amazing mehendi artist for my client's wedding through this platform. The booking process was seamless.',
+    content: 'I found an amazing mehendi artist for my client\'s wedding through this platform. The booking process was seamless.',
     rating: 5,
   },
   {

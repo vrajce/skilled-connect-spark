@@ -1,6 +1,9 @@
 
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+
 import { motion } from 'framer-motion';
 import { 
   LogIn, 
@@ -63,35 +66,87 @@ const staggerContainer = {
 };
 
 const Auth = () => {
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const { signIn, signUp, user } = useAuth();
+
   const [activeTab, setActiveTab] = useState("login");
   const [showPassword, setShowPassword] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
-  const { toast } = useToast();
 
-  const handleLogin = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      navigate('/');
+    }
+  }, [user, navigate]);
+
+  const handleSocialLogin = async (provider: 'google' | 'facebook') => {
+    try {
+      setLoading(true);
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider,
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`
+        }
+      });
+
+      if (error) throw error;
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || `Failed to sign in with ${provider}`,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email || !password) {
       toast({
-        title: "Invalid login",
-        description: "Please enter both email and password",
-        variant: "destructive"
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in all fields",
       });
       return;
     }
-    
-    // In a real app, you would validate and send to an API
-    toast({
-      title: "Login successful",
-      description: "Welcome back to SkilledConnect!",
-    });
+
+    setLoading(true);
+    try {
+      const { error, success } = await signIn(email, password);
+
+      if (error) throw error;
+
+      if (success) {
+        const userEmail = email.split('@')[0];
+        toast({
+          title: `Welcome back, ${userEmail}!`,
+          description: "You have successfully signed in",
+        });
+        navigate('/');
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to sign in",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name || !email || !password || !phone) {
@@ -111,12 +166,54 @@ const Auth = () => {
       });
       return;
     }
+
+    // Password validation
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      toast({
+        variant: "destructive",
+        title: "Invalid password",
+        description: "Password must meet all requirements",
+      });
+      return;
+    }
     
-    // In a real app, you would validate and send to an API
-    toast({
-      title: "Registration successful",
-      description: "Welcome to SkilledConnect!",
-    });
+    setLoading(true);
+    try {
+      const { error, success } = await signUp(email, password);
+
+      if (error) throw error;
+
+      if (success) {
+        toast({
+          title: `Welcome to SkilledConnect, ${name}!`,
+          description: "Please check your email to verify your account",
+        });
+        // Store additional user data in Supabase profiles table
+        // You'll need to create this table in your Supabase dashboard
+        // and set up the appropriate RLS policies
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .insert([
+            {
+              user_id: (await supabase.auth.getUser()).data.user?.id,
+              full_name: name,
+              phone: phone,
+            }
+          ]);
+
+        if (profileError) {
+          console.error('Error creating profile:', profileError);
+        }
+      }
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to create account",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -174,7 +271,7 @@ const Auth = () => {
                   </TabsList>
                   
                   <TabsContent value="login" className="p-6">
-                    <form onSubmit={handleLogin} className="space-y-4">
+                    <form onSubmit={handleSubmit} className="space-y-4">
                       <div className="space-y-2">
                         <Label htmlFor="email">Email</Label>
                         <div className="relative">
@@ -235,8 +332,8 @@ const Auth = () => {
                         </label>
                       </div>
                       
-                      <Button type="submit" className="w-full">
-                        Sign in
+                      <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? 'Signing in...' : 'Sign in'}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                       
@@ -412,8 +509,8 @@ const Auth = () => {
                         </div>
                       </div>
                       
-                      <Button type="submit" className="w-full">
-                        Create account
+                      <Button type="submit" className="w-full" disabled={loading}>
+                        {loading ? 'Creating account...' : 'Create account'}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                       

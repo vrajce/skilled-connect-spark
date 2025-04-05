@@ -1,0 +1,79 @@
+/* Grid pattern background */
+.bg-grid-pattern {
+  background-image: linear-gradient(to right, rgb(var(--foreground) / 0.1) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(var(--foreground) / 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Text gradient */
+.text-gradient-primary {
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary) / 0.8));
+}
+
+/* Floating animation */
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animation-delay-300 {
+  animation-delay: 300ms;
+}
+
+.animation-delay-500 {
+  animation-delay: 500ms;
+}
+
+/* Glass card effect */
+.glass-card {
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 6px -1px rgb(var(--foreground) / 0.1),
+              0 2px 4px -2px rgb(var(--foreground) / 0.1);
+}
+
+/* Hover scale animation */
+.hover-scale {
+  transition: transform 0.3s ease-in-out;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* Service card overlay gradient */
+.service-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top,
+    rgb(0 0 0 / 0.8) 0%,
+    rgb(0 0 0 / 0.7) 20%,
+    rgb(0 0 0 / 0.3) 40%,
+    rgb(0 0 0 / 0) 100%
+  );
+  z-index: 1;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.service-card:hover::before {
+  opacity: 0.9;
+}
+
+/* Background gradient button */
+.bg-gradient-primary {
+  background-image: linear-gradient(to right, hsl(var(--primary)), hsl(var(--primary) / 0.9));
+  color: hsl(var(--primary-foreground));
+  transition: opacity 0.2s ease-in-out;
+}
+
+.bg-gradient-primary:hover {
+  opacity: 0.9;
+}

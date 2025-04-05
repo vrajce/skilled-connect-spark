@@ -114,34 +114,6 @@ const featuredProviders = [
   },
 ];
 
-// Testimonials
-const testimonials = [
-  {
-    id: 1,
-    name: 'Rajesh Kumar',
-    image: 'https://randomuser.me/api/portraits/men/75.jpg',
-    role: 'Homeowner',
-    content: 'SkilledConnect made finding a reliable plumber so easy! The service was prompt and professional. Will definitely use again.',
-    rating: 5,
-  },
-  {
-    id: 2,
-    name: 'Meera Desai',
-    image: 'https://randomuser.me/api/portraits/women/63.jpg',
-    role: 'Event Planner',
-    content: 'I found an amazing mehendi artist for my client\'s wedding through this platform. The booking process was seamless.',
-    rating: 5,
-  },
-  {
-    id: 3,
-    name: 'Arjun Reddy',
-    image: 'https://randomuser.me/api/portraits/men/36.jpg',
-    role: 'Restaurant Owner',
-    content: 'When our AC broke down during peak summer, SkilledConnect connected us with an HVAC technician within hours. Saved our business!',
-    rating: 4,
-  },
-];
-
 // Animation variants
 const fadeInUp = {
   hidden: { opacity: 0, y: 20 },
@@ -165,6 +137,34 @@ const staggerContainer = {
   }
 };
 
+// Testimonials data
+const testimonials = [
+  {
+    id: 1,
+    name: 'Anita Desai',
+    role: 'Homeowner',
+    image: 'https://randomuser.me/api/portraits/women/68.jpg',
+    content: 'Found an amazing electrician through SkilledConnect. The service was prompt and professional. Highly recommended!',
+    rating: 5
+  },
+  {
+    id: 2,
+    name: 'Rajesh Kumar',
+    role: 'Business Owner',
+    image: 'https://randomuser.me/api/portraits/men/75.jpg',
+    content: 'The platform made it so easy to find reliable service providers. Great experience with the plumber I hired.',
+    rating: 4.5
+  },
+  {
+    id: 3,
+    name: 'Priya Sharma',
+    role: 'Event Planner',
+    image: 'https://randomuser.me/api/portraits/women/90.jpg',
+    content: 'The mehendi artist I found here was exceptional. My clients were extremely happy with the service.',
+    rating: 5
+  }
+];
+
 const Index = () => {
   const heroRef = useRef<HTMLDivElement>(null);
 
@@ -186,7 +186,7 @@ const Index = () => {
   return (
     <>
       {/* Hero Section with 3D Parallax Effect */}
-      <section className="relative h-screen flex items-center justify-center overflow-hidden">
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-b from-background to-background/95">
         {/* Background pattern with parallax effect */}
         <div className="absolute inset-0 hero-pattern opacity-30 z-0"></div>
         
@@ -204,15 +204,16 @@ const Index = () => {
             animate="visible"
             variants={staggerContainer}
           >
-            <motion.span 
-              className="inline-block bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-6"
+            <motion.div 
+              className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-6"
               variants={fadeInUp}
             >
+              <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
               Connecting Skills with Needs
-            </motion.span>
+            </motion.div>
             
             <motion.h1 
-              className="text-4xl md:text-6xl font-bold mb-6 text-foreground"
+              className="text-4xl md:text-7xl font-bold mb-6 text-foreground leading-tight"
               variants={fadeInUp}
             >
               Find <span className="text-gradient-primary">Skilled Professionals</span> For All Your Service Needs
@@ -307,7 +308,9 @@ const Index = () => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Link to={`/services/${category.name.toLowerCase()}`} className="block">
-                  <div className="service-card rounded-xl overflow-hidden h-64 transition-all duration-500 group-hover:shadow-xl">
+                  <div 
+                    className="service-card rounded-xl overflow-hidden h-72 transition-all duration-500 group-hover:shadow-xl relative before:absolute before:inset-0 before:bg-gradient-to-t before:from-black/80 before:to-transparent before:z-10"
+                  >
                     {/* Service Image */}
                     <img 
                       src={category.image} 
@@ -316,7 +319,7 @@ const Index = () => {
                     />
                     
                     {/* Overlay Content */}
-                    <div className="absolute inset-0 flex flex-col justify-end p-6 z-10">
+                    <div className="absolute inset-0 flex flex-col justify-end p-6 z-20">
                       <div className={`${category.color} w-12 h-12 rounded-full flex items-center justify-center mb-3 shadow-lg`}>
                         <img src={category.icon} alt="" className="w-6 h-6 text-white" onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -464,7 +467,9 @@ const Index = () => {
       </section>
 
       {/* Featured Providers Section */}
-      <section className="py-20 bg-background">
+      <section className="py-20 bg-background relative">
+        {/* Decorative background */}
+        <div className="absolute inset-0 bg-grid-pattern opacity-5"></div>
         <div className="container px-4">
           <motion.div 
             className="text-center max-w-3xl mx-auto mb-16"
@@ -502,7 +507,7 @@ const Index = () => {
                 transition={{ delay: index * 0.1 }}
               >
                 <Link to={`/providers/${provider.id}`}>
-                  <Card className="overflow-hidden hover-scale bg-card/50 backdrop-blur-sm border border-border/50">
+                  <Card className="overflow-hidden hover-scale bg-card/50 backdrop-blur-sm border border-border/50 transition-all duration-300 hover:shadow-xl hover:shadow-primary/5 hover:-translate-y-1">
                     <CardContent className="p-6">
                       <div className="text-center">
                         <Avatar className="h-20 w-20 mx-auto mb-4 ring-2 ring-primary/20">
@@ -560,7 +565,10 @@ const Index = () => {
       </section>
 
       {/* Testimonials Section with Carousel */}
-      <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5">
+      <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5 relative overflow-hidden">
+        {/* Decorative elements */}
+        <div className="absolute -left-32 -bottom-32 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
+        <div className="absolute -right-32 -top-32 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
         <div className="container px-4">
           <motion.div 
             className="text-center max-w-3xl mx-auto mb-16"

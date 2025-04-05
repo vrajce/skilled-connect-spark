@@ -14,10 +14,20 @@ import ProviderDetail from "./pages/ProviderDetail";
 import HowItWorks from "./pages/HowItWorks";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import Profile from '@/pages/Profile';
+import Settings from '@/pages/Settings';
+import BecomeProvider from '@/pages/BecomeProvider';
+import ProviderDashboard from '@/pages/provider/Dashboard';
+import ProviderServices from '@/pages/provider/Services';
+import AdminDashboard from '@/pages/admin/Dashboard';
 import { motion, AnimatePresence } from "framer-motion";
+import { AuthProvider } from "./contexts/AuthContext";
+import { ProviderProvider } from "./contexts/ProviderContext";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
-// Import Framer Motion (need to add this dependency)
+// Styles
 import "@/index.css";
+import "@/styles/home.css";
 
 const queryClient = new QueryClient();
 
@@ -29,29 +39,37 @@ const App = () => {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <AnimatePresence mode="wait">
-            <Routes>
-              {/* Authentication Routes (outside main layout) */}
-              <Route path="/login" element={<Auth />} />
-              
-              {/* Main Layout Routes */}
-              <Route element={<Layout />}>
-                <Route path="/" element={<Index />} />
-                <Route path="/services" element={<Services />} />
-                <Route path="/services/:category/:id" element={<ServiceDetail />} />
-                <Route path="/providers" element={<Providers />} />
-                <Route path="/providers/:id" element={<ProviderDetail />} />
-                <Route path="/how-it-works" element={<HowItWorks />} />
-                <Route path="*" element={<NotFound />} />
-              </Route>
-            </Routes>
-          </AnimatePresence>
-        </BrowserRouter>
-      </TooltipProvider>
+      <AuthProvider>
+        <ProviderProvider>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <AnimatePresence mode="wait">
+                <Routes>
+                  <Route path="/" element={<Layout />}>
+                    <Route index element={<Index />} />
+                    <Route path="services" element={<Services />} />
+                    <Route path="services/:id" element={<ProtectedRoute><ServiceDetail /></ProtectedRoute>} />
+                    <Route path="providers" element={<ProtectedRoute><Providers /></ProtectedRoute>} />
+                    <Route path="providers/:id" element={<ProtectedRoute><ProviderDetail /></ProtectedRoute>} />
+                    <Route path="how-it-works" element={<HowItWorks />} />
+                    <Route path="/settings" element={<Settings />} />
+                    <Route path="/become-provider" element={<BecomeProvider />} />
+                    <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+                    <Route path="/provider/services" element={<ProviderServices />} />
+                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                  </Route>
+                  <Route path="auth" element={<Auth />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </AnimatePresence>
+              <Toaster />
+              <Sonner />
+            </BrowserRouter>
+          </TooltipProvider>
+        </ProviderProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 };

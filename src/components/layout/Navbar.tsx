@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Button } from "@/components/ui/button";
 import { 
   Menu, 
@@ -8,8 +8,15 @@ import {
   User, 
   BellRing, 
   LogIn,
+  LogOut,
+  Settings,
   Search
 } from "lucide-react";
+import { useAuth } from '@/contexts/AuthContext';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useToast } from '@/components/ui/use-toast';
+import { Switch } from '@/components/ui/switch';
+import { supabase } from '@/lib/supabase';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -25,6 +32,55 @@ const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+  const { toast } = useToast();
+  const [isProvider, setIsProvider] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      checkProviderStatus();
+    }
+  }, [user]);
+
+  const checkProviderStatus = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('providers')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      setIsProvider(!!data);
+    } catch (error) {
+      console.error('Error checking provider status:', error);
+    }
+  };
+
+  const handleProviderSwitch = async () => {
+    if (!isProvider) {
+      navigate('/become-provider');
+      return;
+    }
+
+    try {
+      const { data: providerData, error: providerError } = await supabase
+        .from('providers')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (providerError) throw providerError;
+
+      navigate('/provider/dashboard');
+    } catch (error: any) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to switch to provider view",
+      });
+    }
+  };
   
   // Track scroll position to change navbar style
   useEffect(() => {
@@ -126,23 +182,87 @@ const Navbar = () => {
           {/* User Menu */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
-                <User className="h-5 w-5" />
-              </Button>
+              {user ? (
+                <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={user.user_metadata?.avatar_url || ''} />
+                    <AvatarFallback>{user.email?.[0].toUpperCase()}</AvatarFallback>
+                  </Avatar>
+                </Button>
+              ) : (
+                <Button variant="ghost" size="icon">
+                  <User className="h-5 w-5" />
+                </Button>
+              )}
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <Link to="/login">
-                <DropdownMenuItem>
-                  <LogIn className="mr-2 h-4 w-4" />
-                  <span>Login / Sign Up</span>
-                </DropdownMenuItem>
-              </Link>
-              <DropdownMenuSeparator />
-              <Link to="/become-provider">
-                <DropdownMenuItem>
-                  Become a Provider
-                </DropdownMenuItem>
-              </Link>
+            <DropdownMenuContent align="end" className="w-56">
+              {user ? (
+                <>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">
+                        {user.user_metadata?.full_name || user.email}
+                      </p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {user.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <Link to="/profile">
+                    <DropdownMenuItem>
+                      <User className="mr-2 h-4 w-4" />
+                      <span>Profile</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <Link to="/settings">
+                    <DropdownMenuItem>
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleProviderSwitch}>
+                    <User className="mr-2 h-4 w-4" />
+                    <span>{isProvider ? 'Switch to Provider View' : 'Become a Provider'}</span>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={async () => {
+                    try {
+                      await signOut();
+                      toast({
+                        title: "Logged out successfully",
+                        description: "See you again!"
+                      });
+                      navigate('/');
+                    } catch (error: any) {
+                      toast({
+                        variant: "destructive",
+                        title: "Error",
+                        description: error.message || "Failed to log out"
+                      });
+                    }
+                  }}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </>
+              ) : (
+                <>
+                  <Link to="/auth">
+                    <DropdownMenuItem>
+                      <LogIn className="mr-2 h-4 w-4" />
+                      <span>Login / Sign Up</span>
+                    </DropdownMenuItem>
+                  </Link>
+                  <DropdownMenuSeparator />
+                  <Link to="/become-provider">
+                    <DropdownMenuItem>
+                      Become a Provider
+                    </DropdownMenuItem>
+                  </Link>
+                </>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         </div>

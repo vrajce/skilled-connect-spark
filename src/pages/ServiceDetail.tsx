@@ -64,6 +64,7 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase, debugTableSchema, resetSchemaCache } from '@/lib/supabase';
 import { useToast } from '@/components/ui/use-toast';
+import { BookingForm } from '@/components/BookingForm';
 
 interface ServiceDetails {
   id: string | number;
@@ -98,6 +99,7 @@ const ServiceDetail = () => {
   const [bookingDate, setBookingDate] = useState<Date | undefined>(undefined);
   const [timeSlot, setTimeSlot] = useState<string>('');
   const [bookingLoading, setBookingLoading] = useState(false);
+  const [bookedSlots, setBookedSlots] = useState<string[]>([]);
 
   useEffect(() => {
     const init = async () => {
@@ -118,6 +120,13 @@ const ServiceDetail = () => {
     };
     init();
   }, [id]);
+
+  // Add new effect to fetch booked slots when date changes
+  useEffect(() => {
+    if (service?.id && service?.provider?.id && bookingDate) {
+      fetchBookedSlots();
+    }
+  }, [service?.id, service?.provider?.id, bookingDate]);
 
   const fetchServiceDetails = async () => {
     try {
@@ -184,6 +193,32 @@ const ServiceDetail = () => {
     }
   };
 
+  const fetchBookedSlots = async () => {
+    if (!service?.id || !service?.provider?.id || !bookingDate) return;
+
+    try {
+      const formattedDate = format(bookingDate, 'yyyy-MM-dd');
+      
+      const { data, error } = await supabase
+        .from('bookings')
+        .select('preferred_time')
+        .eq('provider_id', service.provider.id)
+        .eq('service_id', service.id)
+        .eq('booking_date', formattedDate)
+        .eq('status', 'pending');
+
+      if (error) {
+        console.error('Error fetching booked slots:', error);
+        return;
+      }
+
+      const bookedTimes = data?.map(booking => booking.preferred_time) || [];
+      setBookedSlots(bookedTimes);
+    } catch (error) {
+      console.error('Error fetching booked slots:', error);
+    }
+  };
+
   const handleBooking = async () => {
     if (!user) {
       toast({
@@ -213,7 +248,26 @@ const ServiceDetail = () => {
 
       const formattedDate = format(bookingDate, 'yyyy-MM-dd');
       
-      // Using raw SQL query
+      // Check for existing bookings
+      const { data: existingBooking, error: checkError } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('provider_id', service.provider.id)
+        .eq('service_id', service.id)
+        .eq('booking_date', formattedDate)
+        .eq('preferred_time', timeSlot)
+        .eq('status', 'pending')
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        throw checkError;
+      }
+
+      if (existingBooking) {
+        throw new Error('This time slot is already booked. Please select a different time.');
+      }
+      
+      // Create new booking
       const { data, error } = await supabase
         .from('bookings')
         .insert({
@@ -376,11 +430,22 @@ const ServiceDetail = () => {
                       <SelectValue placeholder="Choose a time slot" />
                                         </SelectTrigger>
                                         <SelectContent>
-                      {timeSlots.map((slot) => (
-                        <SelectItem key={slot.value} value={slot.value}>
-                          {slot.label}
+                      {timeSlots.map((slot) => {
+                        const isBooked = bookedSlots.includes(slot.value);
+                        return (
+                          <SelectItem 
+                            key={slot.value} 
+                            value={slot.value}
+                                    className={cn(
+                              isBooked && "opacity-50 cursor-not-allowed text-muted-foreground"
+                            )}
+                            disabled={isBooked}
+                          >
+                            {slot.label}
+                            {isBooked && " (Booked)"}
                               </SelectItem>
-                            ))}
+                        );
+                      })}
                           </SelectContent>
                         </Select>
                       </div>

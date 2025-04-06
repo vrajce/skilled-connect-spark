@@ -71,6 +71,7 @@ interface Service {
   description: string;
   price: number;
   duration: string;
+  category: string;
   provider: {
     id: number;
     business_name: string;
@@ -97,8 +98,8 @@ const Services = () => {
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [priceRange, setPriceRange] = useState<[number, number]>([0, 100000]);
   const [sortBy, setSortBy] = useState<string>('recommended');
   const [currentProviderId, setCurrentProviderId] = useState<number | null>(null);
 
@@ -190,6 +191,8 @@ const Services = () => {
       (service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
        service.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
        service.provider.business_name.toLowerCase().includes(searchQuery.toLowerCase())) &&
+      // Category filter
+      (selectedCategory === 'all' || service.category === selectedCategory) &&
       // Price filter
       service.price >= priceRange[0] && service.price <= priceRange[1]
     )
@@ -202,9 +205,19 @@ const Services = () => {
         case 'rating':
           return (b.provider.rating || 0) - (a.provider.rating || 0);
         default:
-          return (b.provider.total_ratings || 0) - (a.provider.total_ratings || 0);
+          return (b.provider.total_bookings || 0) - (a.provider.total_bookings || 0);
       }
     });
+
+  // Group services by category
+  const groupedServices = filteredServices.reduce((acc, service) => {
+    const category = service.category || 'Uncategorized';
+    if (!acc[category]) {
+      acc[category] = [];
+    }
+    acc[category].push(service);
+    return acc;
+  }, {} as { [key: string]: Service[] });
 
   if (loading) {
     return (
@@ -215,132 +228,157 @@ const Services = () => {
   }
 
   return (
-    <div className="container py-8">
-      {/* Search and Filters */}
-      <div className="mb-8 space-y-4">
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
-              <Input
-                placeholder="Search services or providers..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 border-amber-200 focus:border-amber-300 focus:ring-amber-300"
-              />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px] border-amber-200 focus:border-amber-300 focus:ring-amber-300">
-                <SelectValue placeholder="Sort by" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="recommended">Recommended</SelectItem>
-                <SelectItem value="price_low">Price: Low to High</SelectItem>
-                <SelectItem value="price_high">Price: High to Low</SelectItem>
-                <SelectItem value="rating">Highest Rated</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button variant="outline" className="flex items-center gap-2 border-amber-200 hover:border-amber-300 hover:bg-amber-50">
-              <Filter className="h-4 w-4" />
-              Filters
-            </Button>
-          </div>
+    <div className="container py-4">
+      {/* Search Bar - Top */}
+      <div className="mb-6">
+        <div className="relative max-w-2xl mx-auto">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="Search services or providers..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10 border-amber-200 focus:border-amber-300 focus:ring-amber-300"
+          />
         </div>
       </div>
 
-      {/* Services Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filteredServices.length === 0 ? (
-          <div className="col-span-full text-center py-12">
-            <p className="text-muted-foreground">No services found matching your criteria.</p>
-          </div>
-        ) : (
-          filteredServices.map(service => (
-            <Card key={service.id} className="flex flex-col h-full border-amber-100 hover:border-amber-200 transition-colors">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle>{service.title}</CardTitle>
-                    <CardDescription>{service.provider.business_name}</CardDescription>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                <p className="text-sm text-muted-foreground mb-4">
-                  {service.description}
-                </p>
-                <div className="mt-auto space-y-3">
-                  <div className="flex items-center justify-between text-sm">
-                    <div className="flex items-center text-amber-500">
-                      <Star className="h-4 w-4 fill-current mr-1" />
-                      <span>{service.provider.rating?.toFixed(1) || '5.0'}</span>
-                      <span className="text-muted-foreground ml-1">
-                        ({service.provider.total_bookings || 0} bookings)
-                      </span>
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      <MapPin className="h-4 w-4 mr-1" />
-                      <span>{service.provider.location}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center">
-                      <IndianRupee className="h-4 w-4 text-muted-foreground mr-1" />
-                      <span className="font-medium">₹{service.price}</span>
-                    </div>
-                    <div className="flex items-center text-muted-foreground">
-                      <Clock className="h-4 w-4 mr-1" />
-                      <span>{service.duration} mins</span>
-                    </div>
-                  </div>
-                  <Button className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90" asChild>
-                    <Link to={`/services/${service.id}`}>
-                      Book Now
-                    </Link>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        )}
-      </div>
+      <div className="flex gap-6">
+        {/* Left Sidebar */}
+        <div className="w-64 flex-shrink-0">
+          <div className="sticky top-4 space-y-4">
+            {/* Type of Work */}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg">Type of Work</h3>
+              <div className="space-y-1.5">
+                <label className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={selectedCategory === 'all'}
+                    onChange={() => setSelectedCategory('all')}
+                    className="text-primary"
+                  />
+                  <span>Any type of work</span>
+                </label>
+                {categories.map(category => (
+                  <label key={category.id} className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={selectedCategory === category.name}
+                      onChange={() => setSelectedCategory(category.name)}
+                      className="text-primary"
+                    />
+                    <span>{category.name}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
 
-      {/* FAQ Section */}
-      <div className="mt-16">
-        <h2 className="text-2xl font-bold text-center mb-8 text-amber-800">Frequently Asked Questions</h2>
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card className="border-amber-100">
-            <CardHeader>
-              <CardTitle className="text-lg">How do I book a service?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                Simply browse through our services, select the one you need, choose your preferred time slot, and confirm your booking.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-amber-100">
-            <CardHeader>
-              <CardTitle className="text-lg">How are service providers vetted?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                All our service providers undergo thorough background checks and must maintain high service ratings to remain on our platform.
-              </p>
-            </CardContent>
-          </Card>
-          <Card className="border-amber-100">
-            <CardHeader>
-              <CardTitle className="text-lg">What payment methods are accepted?</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-muted-foreground">
-                We accept all major credit/debit cards, UPI, and net banking. Payment is processed securely through our platform.
-              </p>
-            </CardContent>
-          </Card>
+            {/* Price Range */}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg">Price Range</h3>
+              <div className="px-2">
+                <Slider
+                  value={priceRange}
+                  onValueChange={(value) => setPriceRange(value as [number, number])}
+                  min={0}
+                  max={100000}
+                  step={100}
+                />
+                <div className="flex justify-between mt-2 text-sm text-muted-foreground">
+                  <span>₹{priceRange[0]}</span>
+                  <span>₹{priceRange[1]}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Sort By */}
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg">Sort By</h3>
+              <Select value={sortBy} onValueChange={setSortBy}>
+                <SelectTrigger className="w-full border-amber-200 focus:border-amber-300 focus:ring-amber-300">
+                  <SelectValue placeholder="Sort by" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="recommended">Recommended</SelectItem>
+                  <SelectItem value="price_low">Price: Low to High</SelectItem>
+                  <SelectItem value="price_high">Price: High to Low</SelectItem>
+                  <SelectItem value="rating">Highest Rated</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </div>
+
+        {/* Main Content - Services Grid */}
+        <div className="flex-1">
+          {Object.entries(groupedServices).length === 0 ? (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground">No services found matching your criteria.</p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {Object.entries(groupedServices).map(([category, services]) => (
+                <div key={category}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className={`w-5 h-5 rounded-full flex items-center justify-center text-white`} 
+                         style={{ backgroundColor: categories.find(c => c.name === category)?.color || '#6b7280' }}>
+                      {iconMap[categories.find(c => c.name === category)?.icon || 'Wrench']}
+                    </div>
+                    <h2 className="text-lg font-semibold">{category}</h2>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {services.map(service => (
+                      <Card key={service.id} className="flex flex-col h-full border-amber-100 hover:border-amber-200 transition-colors">
+                        <CardHeader className="pb-3">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <CardTitle>{service.title}</CardTitle>
+                              <CardDescription>{service.provider.business_name}</CardDescription>
+                            </div>
+                          </div>
+                        </CardHeader>
+                        <CardContent className="flex-1 flex flex-col pt-0">
+                          <p className="text-sm text-muted-foreground mb-3">
+                            {service.description}
+                          </p>
+                          <div className="mt-auto space-y-2">
+                            <div className="flex items-center justify-between text-sm">
+                              <div className="flex items-center text-amber-500">
+                                <Star className="h-4 w-4 fill-current mr-1" />
+                                <span>{service.provider.rating?.toFixed(1) || '5.0'}</span>
+                                <span className="text-muted-foreground ml-1">
+                                  ({service.provider.total_bookings || 0} bookings)
+                                </span>
+                              </div>
+                              <div className="flex items-center text-muted-foreground">
+                                <MapPin className="h-4 w-4 mr-1" />
+                                <span>{service.provider.location}</span>
+                              </div>
+                            </div>
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center">
+                                <IndianRupee className="h-4 w-4 text-muted-foreground mr-1" />
+                                <span className="font-medium">₹{service.price}</span>
+                              </div>
+                              <div className="flex items-center text-muted-foreground">
+                                <Clock className="h-4 w-4 mr-1" />
+                                <span>{service.duration} mins</span>
+                              </div>
+                            </div>
+                            <Button className="w-full mt-3 bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                              <Link to={`/services/${service.id}`}>
+                                Book Now
+                              </Link>
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </div>

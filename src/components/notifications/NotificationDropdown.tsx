@@ -7,7 +7,10 @@ import {
   Loader2,
   CheckCircle,
   XCircle,
-  Clock
+  Clock,
+  CalendarCheck,
+  CalendarX,
+  CalendarClock
 } from 'lucide-react';
 import {
   DropdownMenu,
@@ -18,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { format } from 'date-fns';
+import { useView } from '@/contexts/ViewContext';
 
 interface Notification {
   id: number;
@@ -32,17 +36,22 @@ interface Notification {
 const NotificationDropdown = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isProviderView } = useView();
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
+      console.log('[NotificationDropdown] User authenticated:', user.id);
       loadNotifications();
 
       // Set up real-time subscription
-      const subscription = supabase
-        .channel('notifications_channel')
+      const channel = supabase.channel('notifications_channel');
+      
+      console.log('[NotificationDropdown] Setting up real-time subscription');
+      const subscription = channel
         .on('postgres_changes', 
           { 
             event: '*', 
@@ -50,22 +59,37 @@ const NotificationDropdown = () => {
             table: 'notifications',
             filter: `user_id=eq.${user.id}`
           }, 
-          () => {
+          (payload) => {
+            console.log('[NotificationDropdown] Real-time update received:', payload);
             loadNotifications();
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('[NotificationDropdown] Subscription status:', status);
+        });
 
       return () => {
+        console.log('[NotificationDropdown] Cleaning up subscription');
         subscription.unsubscribe();
       };
+    } else {
+      console.log('[NotificationDropdown] No user found');
     }
   }, [user]);
 
   const loadNotifications = async () => {
     try {
-      if (!user) return;
+      if (!user) {
+        console.log('[NotificationDropdown] Cannot load notifications - no user');
+        return;
+      }
 
+      setLoading(true);
+      setError(null);
+
+      console.log('[NotificationDropdown] Loading notifications for user:', user.id);
+      
+      // Load notifications directly without the count check
       const { data, error } = await supabase
         .from('notifications')
         .select('*')
@@ -73,12 +97,18 @@ const NotificationDropdown = () => {
         .order('created_at', { ascending: false })
         .limit(10);
 
-      if (error) throw error;
+      if (error) {
+        console.error('[NotificationDropdown] Load error:', error);
+        setError('Failed to load notifications');
+        throw error;
+      }
 
+      console.log('[NotificationDropdown] Loaded notifications:', data);
       setNotifications(data || []);
       setUnreadCount(data?.filter(n => !n.read).length || 0);
     } catch (error) {
-      console.error('Error loading notifications:', error);
+      console.error('[NotificationDropdown] Unexpected error:', error);
+      setError('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -106,11 +136,15 @@ const NotificationDropdown = () => {
   const getNotificationIcon = (type: string) => {
     switch (type) {
       case 'new_booking':
-        return <Clock className="h-4 w-4" />;
+        return <CalendarClock className="h-4 w-4 text-blue-500" />;
+      case 'booking_accepted':
+        return <CheckCircle className="h-4 w-4 text-green-500" />;
+      case 'booking_rejected':
+        return <XCircle className="h-4 w-4 text-red-500" />;
+      case 'booking_completed':
+        return <CalendarCheck className="h-4 w-4 text-amber-500" />;
       case 'status_update':
-        return notifications.find(n => n.type === type)?.message.includes('accepted') 
-          ? <CheckCircle className="h-4 w-4 text-green-500" />
-          : <XCircle className="h-4 w-4 text-red-500" />;
+        return <Clock className="h-4 w-4 text-gray-500" />;
       default:
         return <Bell className="h-4 w-4" />;
     }
@@ -120,8 +154,13 @@ const NotificationDropdown = () => {
     if (!notification.read) {
       await markAsRead(notification.id);
     }
-    // Navigate to the relevant booking
-    navigate(`/bookings/${notification.booking_id}`);
+    
+    // Navigate based on user type and notification type
+    if (isProviderView) {
+      navigate(`/provider/bookings`);
+    } else {
+      navigate(`/bookings`);
+    }
   };
 
   if (loading) {
@@ -148,7 +187,11 @@ const NotificationDropdown = () => {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-80">
-        {notifications.length === 0 ? (
+        {error ? (
+          <div className="text-center py-4 text-red-500">
+            {error}
+          </div>
+        ) : notifications.length === 0 ? (
           <div className="text-center py-4 text-muted-foreground">
             No notifications
           </div>

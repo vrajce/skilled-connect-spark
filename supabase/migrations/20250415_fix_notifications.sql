@@ -1,31 +1,8 @@
--- Create notifications table
-CREATE TABLE IF NOT EXISTS notifications (
-    id BIGSERIAL PRIMARY KEY,
-    created_at TIMESTAMPTZ DEFAULT NOW(),
-    user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
-    title TEXT NOT NULL,
-    message TEXT NOT NULL,
-    type TEXT NOT NULL,
-    booking_id BIGINT REFERENCES bookings(id) ON DELETE CASCADE,
-    read BOOLEAN DEFAULT false,
-    metadata JSONB DEFAULT '{}'::jsonb
-);
-
--- Enable RLS
-ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
-
--- Create notification policies
-CREATE POLICY "Users can view their own notifications"
-    ON notifications FOR SELECT
-    USING (auth.uid() = user_id);
-
-CREATE POLICY "Users can update their own notifications"
-    ON notifications FOR UPDATE
-    USING (auth.uid() = user_id);
-
--- Grant permissions
-GRANT ALL ON notifications TO authenticated;
-GRANT USAGE ON SEQUENCE notifications_id_seq TO authenticated;
+-- Drop existing triggers and functions
+DROP TRIGGER IF EXISTS on_new_booking ON bookings;
+DROP TRIGGER IF EXISTS on_booking_status_change ON bookings;
+DROP FUNCTION IF EXISTS notify_provider_booking();
+DROP FUNCTION IF EXISTS notify_user_booking_status();
 
 -- Function to create notifications for new bookings
 CREATE OR REPLACE FUNCTION notify_provider_booking()
@@ -111,13 +88,11 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Create triggers
-DROP TRIGGER IF EXISTS on_new_booking ON bookings;
 CREATE TRIGGER on_new_booking
     AFTER INSERT ON bookings
     FOR EACH ROW
     EXECUTE FUNCTION notify_provider_booking();
 
-DROP TRIGGER IF EXISTS on_booking_status_change ON bookings;
 CREATE TRIGGER on_booking_status_change
     AFTER UPDATE ON bookings
     FOR EACH ROW

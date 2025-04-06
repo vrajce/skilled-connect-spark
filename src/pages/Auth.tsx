@@ -185,8 +185,8 @@ const Auth = () => {
 
       if (success) {
         toast({
-          title: `Welcome to SkilledConnect, ${name}!`,
-          description: "Please check your email to verify your account",
+          title: `Welcome to SevaBee, ${name}!`,
+          description: "Your account has been created successfully.",
         });
         // Store additional user data in Supabase profiles table
         // You'll need to create this table in your Supabase dashboard
@@ -269,16 +269,18 @@ const Auth = () => {
               <div className="relative w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
                 <span className="text-white font-bold text-xl">SC</span>
               </div>
-              <span className="text-xl font-bold ml-2 text-gradient-primary">SkilledConnect</span>
+              <span className="text-xl font-bold ml-2 text-gradient-primary">SevaBee</span>
             </Link>
             
             <h1 className="text-2xl font-bold mb-2">
-              {activeTab === "login" ? "Welcome back" : "Create your account"}
+              {isSignUp 
+                ? "Join SevaBee to discover skilled professionals"
+                : "Welcome back"}
             </h1>
             <p className="text-muted-foreground">
-              {activeTab === "login" 
-                ? "Sign in to access your account" 
-                : "Join SkilledConnect to discover skilled professionals"}
+              {isSignUp 
+                ? "Join SevaBee to discover skilled professionals" 
+                : "Sign in to access your account"}
             </p>
           </motion.div>
           
@@ -368,7 +370,7 @@ const Auth = () => {
                         {loading ? 'Signing in...' : 'Sign in'}
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
-                      
+{/*                       
                       <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
                           <Separator />
@@ -389,7 +391,7 @@ const Auth = () => {
                           <MailIcon className="mr-2 h-4 w-4" />
                           Google
                         </Button>
-                      </div>
+                      </div> */}
                     </form>
                   </TabsContent>
                   
@@ -546,7 +548,7 @@ const Auth = () => {
                         <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                       
-                      <div className="relative my-6">
+                      {/* <div className="relative my-6">
                         <div className="absolute inset-0 flex items-center">
                           <Separator />
                         </div>
@@ -566,7 +568,7 @@ const Auth = () => {
                           <MailIcon className="mr-2 h-4 w-4" />
                           Google
                         </Button>
-                      </div>
+                      </div> */}
                     </form>
                   </TabsContent>
                 </Tabs>

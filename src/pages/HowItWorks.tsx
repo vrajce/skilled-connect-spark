@@ -70,8 +70,8 @@ const staggerContainer = {
 // FAQs
 const faqs = [
   {
-    question: 'How do I book a service on SkilledConnect?',
-    answer: 'Booking a service is simple. Browse our categories or search for the service you need, select a provider based on reviews and ratings, choose your preferred date and time, and confirm your booking. You\'ll receive instant confirmation and can track your booking status in your account.'
+    question: 'How do I book a service on SevaBee?',
+    answer: 'Browse through our available services, select the one you need, choose your preferred time slot, and confirm your booking. You can track the status of your booking through your account dashboard.'
   },
   {
     question: 'How are service providers verified?',
@@ -87,7 +87,7 @@ const faqs = [
   },
   {
     question: 'How do I become a service provider?',
-    answer: 'To become a service provider on SkilledConnect, click on "Become a Provider" in the navigation menu. Complete your profile with your skills, experience, and availability. Our team will review your application and guide you through the verification process.'
+    answer: 'To become a service provider on SevaBee, click on "Become a Provider" in the navigation menu. Complete your profile with your skills, experience, and availability. Our team will review your application and guide you through the onboarding process.'
   },
   {
     question: 'Is there a money-back guarantee?',
@@ -99,7 +99,7 @@ const faqs = [
   },
   {
     question: 'Are there any membership fees?',
-    answer: 'No, there are no membership fees for customers to use SkilledConnect. Service providers pay a small commission on completed bookings, but there are no upfront or monthly fees.'
+    answer: 'No, there are no membership fees for customers to use SevaBee. Service providers pay a small commission on completed bookings, but there are no upfront or monthly fees.'
   }
 ];
 
@@ -120,7 +120,7 @@ const HowItWorks = () => {
             variants={fadeInUp}
           >
             <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              How <span className="text-gradient-primary">SkilledConnect</span> Works
+              How <span className="text-gradient-primary">SevaBee</span> Works
             </h1>
             <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
               Connecting skilled professionals with customers in just a few simple steps
@@ -228,7 +228,7 @@ const HowItWorks = () => {
               For <span className="text-gradient-primary">Customers</span>
             </h2>
             <p className="text-muted-foreground">
-              Discover how SkilledConnect makes finding and booking services effortless
+              Discover how SevaBee makes finding and booking services effortless
             </p>
           </motion.div>
 
@@ -462,7 +462,7 @@ const HowItWorks = () => {
                   <div className="p-8">
                     <h3 className="text-2xl font-bold mb-4">Join Our Network</h3>
                     <p className="text-muted-foreground mb-6">
-                      SkilledConnect helps skilled professionals like you grow your business by connecting you with customers looking for your services.
+                      SevaBee helps skilled professionals like you grow your business by connecting you with customers looking for your services.
                     </p>
                     
                     <div className="space-y-4">
@@ -658,7 +658,7 @@ const HowItWorks = () => {
               Frequently Asked <span className="text-gradient-primary">Questions</span>
             </h2>
             <p className="text-muted-foreground">
-              Find answers to common questions about using SkilledConnect
+              Find answers to common questions about using SevaBee
             </p>
           </motion.div>
 
@@ -702,7 +702,7 @@ const HowItWorks = () => {
               viewport={{ once: true }}
             >
               <h2 className="text-3xl md:text-4xl font-bold mb-4">
-                Ready to Get Started with <span className="text-gradient-primary">SkilledConnect?</span>
+                Ready to Get Started with <span className="text-gradient-primary">SevaBee?</span>
               </h2>
               <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
                 Join thousands of satisfied customers and service providers on our platform

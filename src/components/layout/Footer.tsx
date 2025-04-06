@@ -1,9 +1,5 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Facebook, Instagram, Twitter, Linkedin, Send } from 'lucide-react';
 
 const Footer = () => {
   return (
@@ -12,67 +8,45 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
           <div className="md:col-span-4 space-y-4">
             <Link to="/" className="flex items-center space-x-2">
-              <div className="relative w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                <span className="text-white font-bold text-xl">SC</span>
-              </div>
-              <span className="text-xl font-bold text-gradient-primary">SkilledConnect</span>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                className="h-14 w-14"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                {/* Bee body */}
+                <ellipse cx="12" cy="12" rx="5" ry="3" className="fill-amber-400" />
+                {/* Stripes */}
+                <rect x="9" y="10" width="1.5" height="4" className="fill-amber-900" />
+                <rect x="13.5" y="10" width="1.5" height="4" className="fill-amber-900" />
+                {/* Wings */}
+                <ellipse cx="12" cy="9" rx="3" ry="1.5" className="fill-white/80" />
+                {/* Antennae */}
+                <line x1="9" y1="8" x2="7" y2="6" className="stroke-amber-900" />
+                <line x1="15" y1="8" x2="17" y2="6" className="stroke-amber-900" />
+              </svg>
+              <span className="text-2xl font-bold text-gradient-primary">SevaBee</span>
             </Link>
             <p className="text-muted-foreground">
               Connecting you with skilled professionals for all your service needs. Quality service providers at your fingertips.
             </p>
-            <div className="flex space-x-4">
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Facebook size={20} />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Instagram size={20} />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Twitter size={20} />
-              </a>
-              <a href="#" className="text-muted-foreground hover:text-primary transition-colors">
-                <Linkedin size={20} />
-              </a>
-            </div>
           </div>
 
-          <div className="md:col-span-2 space-y-4">
-            <h3 className="font-semibold text-lg">Services</h3>
+          <div className="md:col-span-4 space-y-4">
+            <h3 className="font-semibold text-lg">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link to="/services/plumbing" className="text-muted-foreground hover:text-primary transition-colors">
-                  Plumbing
+                <Link to="/services" className="text-muted-foreground hover:text-primary transition-colors">
+                  Find Services
                 </Link>
               </li>
               <li>
-                <Link to="/services/electrical" className="text-muted-foreground hover:text-primary transition-colors">
-                  Electrical
-                </Link>
-              </li>
-              <li>
-                <Link to="/services/mehendi" className="text-muted-foreground hover:text-primary transition-colors">
-                  Mehendi Art
-                </Link>
-              </li>
-              <li>
-                <Link to="/services/carpentry" className="text-muted-foreground hover:text-primary transition-colors">
-                  Carpentry
-                </Link>
-              </li>
-              <li>
-                <Link to="/services/tailoring" className="text-muted-foreground hover:text-primary transition-colors">
-                  Tailoring
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div className="md:col-span-2 space-y-4">
-            <h3 className="font-semibold text-lg">Company</h3>
-            <ul className="space-y-2">
-              <li>
-                <Link to="/about" className="text-muted-foreground hover:text-primary transition-colors">
-                  About Us
+                <Link to="/providers" className="text-muted-foreground hover:text-primary transition-colors">
+                  Browse Providers
                 </Link>
               </li>
               <li>
@@ -81,44 +55,33 @@ const Footer = () => {
                 </Link>
               </li>
               <li>
-                <Link to="/careers" className="text-muted-foreground hover:text-primary transition-colors">
-                  Careers
-                </Link>
-              </li>
-              <li>
-                <Link to="/blog" className="text-muted-foreground hover:text-primary transition-colors">
-                  Blog
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">
-                  Contact
+                <Link to="/become-provider" className="text-muted-foreground hover:text-primary transition-colors">
+                  Become a Provider
                 </Link>
               </li>
             </ul>
           </div>
 
           <div className="md:col-span-4 space-y-4">
-            <h3 className="font-semibold text-lg">Subscribe to our newsletter</h3>
-            <p className="text-muted-foreground">
-              Get the latest news and updates from SkilledConnect.
-            </p>
-            <div className="flex space-x-2">
-              <Input 
-                type="email" 
-                placeholder="Enter your email" 
-                className="rounded-full"
-              />
-              <Button type="submit" size="icon" className="rounded-full">
-                <Send className="h-4 w-4" />
-              </Button>
-            </div>
+            <h3 className="font-semibold text-lg">Support</h3>
+            <ul className="space-y-2">
+              <li>
+                <Link to="/contact" className="text-muted-foreground hover:text-primary transition-colors">
+                  Contact Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/help" className="text-muted-foreground hover:text-primary transition-colors">
+                  Help Center
+                </Link>
+              </li>
+            </ul>
           </div>
         </div>
 
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} SkilledConnect. All rights reserved.
+            © {new Date().getFullYear()} SevaBee. All rights reserved.
           </p>
           <div className="flex space-x-6 mt-4 md:mt-0">
             <Link to="/privacy" className="text-sm text-muted-foreground hover:text-primary transition-colors">
@@ -126,9 +89,6 @@ const Footer = () => {
             </Link>
             <Link to="/terms" className="text-sm text-muted-foreground hover:text-primary transition-colors">
               Terms of Service
-            </Link>
-            <Link to="/cookies" className="text-sm text-muted-foreground hover:text-primary transition-colors">
-              Cookies Policy
             </Link>
           </div>
         </div>

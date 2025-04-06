@@ -19,9 +19,10 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Loader2, Plus } from 'lucide-react';
+import { Loader2, Plus, Trash2 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
+import { Badge } from '@/components/ui/badge';
 
 interface Service {
   id: number;
@@ -32,6 +33,7 @@ interface Service {
   description: string;
   price: number;
   duration: string;
+  category: string;
 }
 
 interface NewService {
@@ -39,6 +41,7 @@ interface NewService {
   description: string;
   price: number;
   duration: string;
+  category: string;
 }
 
 const categories = [
@@ -63,7 +66,8 @@ const ProviderServices = () => {
     title: '',
     description: '',
     price: 0,
-    duration: '30'
+    duration: '30',
+    category: ''
   });
 
   useEffect(() => {
@@ -135,6 +139,7 @@ const ProviderServices = () => {
       ...prev,
       [field]: field === 'price' ? parseFloat(value) || 0 : 
                field === 'duration' ? value : 
+               field === 'category' ? value : 
                value
     }));
   };
@@ -169,7 +174,8 @@ const ProviderServices = () => {
         title: '',
         description: '',
         price: 0,
-        duration: '30'
+        duration: '30',
+        category: ''
       });
 
       toast({
@@ -235,53 +241,71 @@ const ProviderServices = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="title">Service Title</Label>
-                <Input
-                  id="title"
-                  placeholder="e.g., Basic Plumbing Service"
-                  value={newService.title}
-                  onChange={e => handleInputChange(e, 'title')}
-                  required
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="title">Service Title</Label>
+              <Input
+                id="title"
+                placeholder="e.g., Basic Plumbing Service"
+                value={newService.title}
+                onChange={e => handleInputChange(e, 'title')}
+                required
+              />
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="price">Price (₹)</Label>
-                <Input
-                  id="price"
-                  type="number"
-                  min="0"
-                  step="0.01"
-                  placeholder="0.00"
-                  value={newService.price}
-                  onChange={e => handleInputChange(e, 'price')}
-                  required
-                />
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="category">Category</Label>
+              <Select
+                value={newService.category}
+                onValueChange={value => handleInputChange(value, 'category')}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="duration">Duration</Label>
-                <Select
-                  value={newService.duration}
-                  onValueChange={value => handleInputChange(value, 'duration')}
-                  required
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="90">1.5 hours</SelectItem>
-                    <SelectItem value="120">2 hours</SelectItem>
-                    <SelectItem value="180">3 hours</SelectItem>
-                    <SelectItem value="240">4 hours</SelectItem>
-                    <SelectItem value="480">Full day (8 hours)</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="price">Price (₹)</Label>
+              <Input
+                id="price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={newService.price}
+                onChange={e => handleInputChange(e, 'price')}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duration</Label>
+              <Select
+                value={newService.duration}
+                onValueChange={value => handleInputChange(value, 'duration')}
+                required
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="30">30 minutes</SelectItem>
+                  <SelectItem value="60">1 hour</SelectItem>
+                  <SelectItem value="90">1.5 hours</SelectItem>
+                  <SelectItem value="120">2 hours</SelectItem>
+                  <SelectItem value="180">3 hours</SelectItem>
+                  <SelectItem value="240">4 hours</SelectItem>
+                  <SelectItem value="480">Full day (8 hours)</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
@@ -314,32 +338,29 @@ const ProviderServices = () => {
           </Card>
         ) : (
           services.map(service => (
-            <Card key={service.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
+            <Card key={service.id} className="relative">
+              <CardContent className="p-6">
+                <div className="flex justify-between items-start mb-4">
                   <div>
-                    <CardTitle className="text-xl">{service.title}</CardTitle>
+                    <h3 className="text-lg font-semibold mb-1">{service.title}</h3>
+                    <Badge variant="secondary" className="mb-2">
+                      {service.category}
+                    </Badge>
                   </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-destructive hover:text-destructive/90"
+                    onClick={() => deleteService(service.id)}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <p className="text-sm text-muted-foreground">{service.description}</p>
-                  <div className="flex justify-between items-center">
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Price</p>
-                      <p className="text-lg font-semibold">₹{service.price}</p>
-                    </div>
-                    <div className="space-y-1">
-                      <p className="text-sm font-medium">Duration</p>
-                      <p className="text-lg font-semibold">{service.duration} mins</p>
-                    </div>
-                    <Button
-                      variant="destructive"
-                      onClick={() => deleteService(service.id)}
-                    >
-                      Delete
-                    </Button>
+                <p className="text-muted-foreground mb-4">{service.description}</p>
+                <div className="flex justify-between items-center text-sm">
+                  <div className="flex items-center gap-4">
+                    <span className="font-medium">₹{service.price}</span>
+                    <span className="text-muted-foreground">{service.duration} mins</span>
                   </div>
                 </div>
               </CardContent>

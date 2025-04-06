@@ -10,14 +10,17 @@ CREATE TABLE IF NOT EXISTS service_categories (
 -- Insert default categories
 INSERT INTO service_categories (name, icon, color) 
 VALUES 
-    ('Plumbing', 'Wrench', '#2563eb'),
-    ('Electrical', 'Zap', '#dc2626'),
-    ('Mehendi', 'Flower2', '#16a34a'),
-    ('Carpentry', 'Hammer', '#ca8a04'),
-    ('Cleaning', 'Sparkles', '#0891b2'),
-    ('Tailoring', 'Scissors', '#9333ea'),
-    ('Photography', 'Camera', '#be185d'),
-    ('Catering', 'UtensilsCrossed', '#ea580c')
+    ('Plumber', 'Wrench', '#2563eb'),
+    ('Electrician', 'Zap', '#dc2626'),
+    ('Mehendi Artist', 'Flower2', '#16a34a'),
+    ('Carpenter', 'Hammer', '#ca8a04'),
+    ('Cleaner', 'Sparkles', '#0891b2'),
+    ('Tutor', 'Scissors', '#9333ea'),
+    ('Photographer', 'Camera', '#be185d'),
+    ('Cook', 'UtensilsCrossed', '#ea580c'),
+    ('Painter', 'Paintbrush', '#3b82f6'),
+    ('Gardener', 'Plant', '#22c55e'),
+    ('Driver', 'Car', '#f97316')
 ON CONFLICT (name) DO NOTHING;
 
 -- Add new columns to provider_services

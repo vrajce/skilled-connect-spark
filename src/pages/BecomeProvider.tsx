@@ -25,6 +25,7 @@ interface ProviderForm {
   location: string;
   languages: string[];
   profile_picture: File | null;
+  p_number: string;
   certifications: {
     title: string;
     institution: string;
@@ -91,6 +92,7 @@ const BecomeProvider = () => {
     location: '',
     languages: [],
     profile_picture: null,
+    p_number: '',
     certifications: [],
     faq: [
       {
@@ -228,6 +230,7 @@ const BecomeProvider = () => {
           location: formData.location,
           languages: formData.languages,
           profile_picture: profile_picture_url,
+          p_number: formData.p_number,
           certifications: certifications,
           faq: faq,
           status: 'pending'
@@ -340,6 +343,21 @@ const BecomeProvider = () => {
                     required
                   />
                 </div>
+              </div>
+
+              <div>
+                <Label htmlFor="p_number">Phone Number</Label>
+                <Input
+                  id="p_number"
+                  type="tel"
+                  value={formData.p_number}
+                  onChange={(e) => setFormData({ ...formData, p_number: e.target.value })}
+                  placeholder="+1 (123) 456-7890"
+                  required
+                />
+                <p className="text-sm text-muted-foreground mt-1">
+                  This number will be visible to users who want to contact you
+                </p>
               </div>
             </div>
           </CardContent>

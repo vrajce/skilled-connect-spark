@@ -78,14 +78,32 @@ const Navbar = () => {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className={cn(
-      "fixed top-0 left-0 right-0 z-50 transition-all duration-300 py-4",
-      scrolled ? "bg-white/80 dark:bg-gray-900/80 backdrop-blur-md shadow-md py-2" : "bg-transparent"
-    )}>
-      <div className="container mx-auto px-4 flex items-center justify-between">
+    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <nav className="container max-w-7xl h-16 flex items-center justify-between">
         {/* Logo */}
-        <Link to="/" className="text-2xl font-bold">
-          SkillConnect
+        <Link to="/" className="flex items-center space-x-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            className="h-14 w-14"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            {/* Bee body */}
+            <ellipse cx="12" cy="12" rx="5" ry="3" className="fill-amber-400" />
+            {/* Stripes */}
+            <rect x="9" y="10" width="1.5" height="4" className="fill-amber-900" />
+            <rect x="13.5" y="10" width="1.5" height="4" className="fill-amber-900" />
+            {/* Wings */}
+            <ellipse cx="12" cy="9" rx="3" ry="1.5" className="fill-white/80" />
+            {/* Antennae */}
+            <line x1="9" y1="8" x2="7" y2="6" className="stroke-amber-900" />
+            <line x1="15" y1="8" x2="17" y2="6" className="stroke-amber-900" />
+          </svg>
+          <span className="text-2xl font-bold text-gradient-primary">SevaBee</span>
         </Link>
 
         {/* Desktop Navigation */}
@@ -120,7 +138,7 @@ const Navbar = () => {
         </div>
 
         {/* Right Side Menu */}
-        <div className="hidden md:flex items-center space-x-4">
+        <div className="flex items-center gap-4">
           {/* View Switcher */}
           {isProvider && (
             <Button
@@ -134,7 +152,7 @@ const Navbar = () => {
             </Button>
           )}
 
-          {user && (
+          {user ? (
             <div className="flex items-center gap-2">
               <NotificationDropdown />
               <DropdownMenu>
@@ -190,6 +208,21 @@ const Navbar = () => {
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Link to="/auth">
+                <Button variant="ghost" size="sm" className="flex items-center">
+                  <LogIn className="mr-2 h-4 w-4" />
+                  Log in
+                </Button>
+              </Link>
+              <Link to="/become-provider">
+                <Button size="sm" className="flex items-center">
+                  <User className="mr-2 h-4 w-4" />
+                  Become a Provider
+                </Button>
+              </Link>
+            </div>
           )}
         </div>
 
@@ -204,7 +237,7 @@ const Navbar = () => {
             <Menu className="h-6 w-6" />
           )}
         </button>
-      </div>
+      </nav>
 
       {/* Mobile menu */}
       <div
@@ -319,7 +352,7 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-    </nav>
+    </header>
   );
 };
 

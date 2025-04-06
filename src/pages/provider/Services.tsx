@@ -1,276 +1,352 @@
-import React, { useState } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/components/ui/use-toast';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Loader2, Plus } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
-import { Plus, Edit, Trash2, DollarSign } from 'lucide-react';
+import { useAuth } from '@/contexts/AuthContext';
+
+interface Service {
+  id: number;
+  created_at: string;
+  updated_at: string;
+  provider_id: number;
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+}
+
+interface NewService {
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+}
+
+const categories = [
+  'Plumbing',
+  'Electrical',
+  'Mehendi',
+  'Carpentry',
+  'Cleaning',
+  'Tailoring',
+  'Photography',
+  'Catering'
+];
 
 const ProviderServices = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [loading, setLoading] = useState(false);
-  const [services, setServices] = useState([
-    {
-      id: 1,
-      name: "Basic Plumbing Service",
-      category: "Plumbing",
-      price: 500,
-      duration: 60,
-      description: "Basic plumbing repairs and maintenance",
-      isAvailable: true,
-    },
-    // Add more services
-  ]);
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [services, setServices] = useState<Service[]>([]);
+  const [providerId, setProviderId] = useState<number | null>(null);
+  const [newService, setNewService] = useState<NewService>({
+    title: '',
+    description: '',
+    price: 0,
+    duration: '30'
+  });
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [editingService, setEditingService] = useState<any>(null);
-
-  const handleAddService = () => {
-    setIsEditing(true);
-    setEditingService({
-      name: "",
-      category: "",
-      price: "",
-      duration: "",
-      description: "",
-      isAvailable: true,
-    });
-  };
-
-  const handleEditService = (service: any) => {
-    setIsEditing(true);
-    setEditingService(service);
-  };
-
-  const handleDeleteService = async (serviceId: number) => {
-    try {
-      setLoading(true);
-      // In a real app, you would delete from your Supabase table
-      const updatedServices = services.filter(s => s.id !== serviceId);
-      setServices(updatedServices);
-      toast({
-        title: "Service deleted",
-        description: "The service has been removed successfully",
-      });
-    } catch (error: any) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: error.message || "Failed to delete service",
-      });
-    } finally {
-      setLoading(false);
+  useEffect(() => {
+    if (user) {
+      getProviderId();
     }
-  };
+  }, [user]);
 
-  const handleSaveService = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const getProviderId = async () => {
     try {
-      setLoading(true);
-      // In a real app, you would save to your Supabase table
-      if (editingService.id) {
-        const updatedServices = services.map(s =>
-          s.id === editingService.id ? editingService : s
-        );
-        setServices(updatedServices);
+      const { data, error } = await supabase
+        .from('providers')
+        .select('id, status')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error) throw error;
+
+      if (!data || data.status !== 'approved') {
         toast({
-          title: "Service updated",
-          description: "Your service has been updated successfully",
+          variant: "destructive",
+          title: "Access Denied",
+          description: "You need to be an approved provider to manage services."
         });
-      } else {
-        const newService = {
-          ...editingService,
-          id: services.length + 1,
-        };
-        setServices([...services, newService]);
-        toast({
-          title: "Service added",
-          description: "Your new service has been added successfully",
-        });
+        navigate('/become-provider');
+        return;
       }
-      setIsEditing(false);
-      setEditingService(null);
+
+      setProviderId(data.id);
+      loadServices(data.id);
     } catch (error: any) {
+      console.error('Error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to save service",
+        description: "Failed to verify provider status."
+      });
+    }
+  };
+
+  const loadServices = async (pid: number) => {
+    try {
+      const { data, error } = await supabase
+        .from('provider_services')
+        .select('*')
+        .eq('provider_id', pid)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      setServices(data || []);
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to load services."
       });
     } finally {
       setLoading(false);
     }
   };
+
+  const handleInputChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | string,
+    field: keyof NewService
+  ) => {
+    const value = typeof e === 'string' ? e : e.target.value;
+    setNewService(prev => ({
+      ...prev,
+      [field]: field === 'price' ? parseFloat(value) || 0 : 
+               field === 'duration' ? value : 
+               value
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!providerId) return;
+
+    try {
+      const serviceData = {
+        ...newService,
+        provider_id: providerId
+      };
+
+      console.log('Submitting service data:', serviceData);
+
+      const { data, error } = await supabase
+        .from('provider_services')
+        .insert([serviceData])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Supabase error:', error);
+        throw error;
+      }
+
+      console.log('Service added successfully:', data);
+
+      setServices(prev => [data, ...prev]);
+      setNewService({
+        title: '',
+        description: '',
+        price: 0,
+        duration: '30'
+      });
+
+      toast({
+        title: "Success",
+        description: "Service added successfully!"
+      });
+    } catch (error: any) {
+      console.error('Detailed error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error.message || "Failed to add service."
+      });
+    }
+  };
+
+  const deleteService = async (serviceId: number) => {
+    if (!confirm('Are you sure you want to delete this service?')) return;
+
+    try {
+      const { error } = await supabase
+        .from('provider_services')
+        .delete()
+        .eq('id', serviceId);
+
+      if (error) throw error;
+
+      setServices(prev => prev.filter(service => service.id !== serviceId));
+      toast({
+        title: "Success",
+        description: "Service deleted successfully!"
+      });
+    } catch (error: any) {
+      console.error('Error:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete service."
+      });
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container max-w-7xl py-10">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold">My Services</h1>
-          <p className="text-muted-foreground">Manage your service offerings</p>
-        </div>
-        <Button onClick={handleAddService}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add Service
-        </Button>
+    <div className="container max-w-4xl py-8">
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold mb-2">Manage Services</h1>
+        <p className="text-muted-foreground">Add and manage your professional services</p>
       </div>
 
-      {isEditing ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{editingService.id ? 'Edit Service' : 'Add New Service'}</CardTitle>
-            <CardDescription>Fill in the service details</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSaveService} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Service Name</Label>
-                  <Input
-                    id="name"
-                    value={editingService.name}
-                    onChange={(e) => setEditingService({...editingService, name: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="category">Category</Label>
-                  <Select
-                    value={editingService.category}
-                    onValueChange={(value) => setEditingService({...editingService, category: value})}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="Plumbing">Plumbing</SelectItem>
-                      <SelectItem value="Electrical">Electrical</SelectItem>
-                      <SelectItem value="Carpentry">Carpentry</SelectItem>
-                      <SelectItem value="Cleaning">Cleaning</SelectItem>
-                      <SelectItem value="Painting">Painting</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="price">Price (₹)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    value={editingService.price}
-                    onChange={(e) => setEditingService({...editingService, price: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="duration">Duration (minutes)</Label>
-                  <Input
-                    id="duration"
-                    type="number"
-                    value={editingService.duration}
-                    onChange={(e) => setEditingService({...editingService, duration: e.target.value})}
-                    required
-                  />
-                </div>
-              </div>
-
+      {/* Add New Service Form */}
+      <Card className="mb-8">
+        <CardHeader>
+          <CardTitle>Add New Service</CardTitle>
+          <CardDescription>Fill in the details to add a new service</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="description">Description</Label>
-                <Textarea
-                  id="description"
-                  value={editingService.description}
-                  onChange={(e) => setEditingService({...editingService, description: e.target.value})}
+                <Label htmlFor="title">Service Title</Label>
+                <Input
+                  id="title"
+                  placeholder="e.g., Basic Plumbing Service"
+                  value={newService.title}
+                  onChange={e => handleInputChange(e, 'title')}
                   required
                 />
               </div>
 
-              <div className="flex items-center space-x-2">
-                <Switch
-                  checked={editingService.isAvailable}
-                  onCheckedChange={(checked) => setEditingService({...editingService, isAvailable: checked})}
+              <div className="space-y-2">
+                <Label htmlFor="price">Price (₹)</Label>
+                <Input
+                  id="price"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={newService.price}
+                  onChange={e => handleInputChange(e, 'price')}
+                  required
                 />
-                <Label>Service is available</Label>
               </div>
 
-              <div className="flex space-x-2">
-                <Button type="submit" disabled={loading}>
-                  {loading ? "Saving..." : "Save Service"}
-                </Button>
-                <Button type="button" variant="outline" onClick={() => {
-                  setIsEditing(false);
-                  setEditingService(null);
-                }}>
-                  Cancel
-                </Button>
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duration</Label>
+                <Select
+                  value={newService.duration}
+                  onValueChange={value => handleInputChange(value, 'duration')}
+                  required
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="30">30 minutes</SelectItem>
+                    <SelectItem value="60">1 hour</SelectItem>
+                    <SelectItem value="90">1.5 hours</SelectItem>
+                    <SelectItem value="120">2 hours</SelectItem>
+                    <SelectItem value="180">3 hours</SelectItem>
+                    <SelectItem value="240">4 hours</SelectItem>
+                    <SelectItem value="480">Full day (8 hours)</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-            </form>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {services.map((service) => (
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description">Description</Label>
+              <Textarea
+                id="description"
+                placeholder="Describe your service..."
+                value={newService.description}
+                onChange={e => handleInputChange(e, 'description')}
+                required
+              />
+            </div>
+
+            <Button type="submit" className="w-full">
+              <Plus className="w-4 h-4 mr-2" />
+              Add Service
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Services List */}
+      <div className="grid gap-4">
+        <h2 className="text-xl font-semibold">Your Services</h2>
+        {services.length === 0 ? (
+          <Card>
+            <CardContent className="text-center py-6">
+              <p className="text-muted-foreground">No services added yet.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          services.map(service => (
             <Card key={service.id}>
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
-                    <CardTitle>{service.name}</CardTitle>
-                    <CardDescription>{service.category}</CardDescription>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleEditService(service)}
-                    >
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDeleteService(service.id)}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                    <CardTitle className="text-xl">{service.title}</CardTitle>
                   </div>
                 </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  <p className="text-sm">{service.description}</p>
+                  <p className="text-sm text-muted-foreground">{service.description}</p>
                   <div className="flex justify-between items-center">
-                    <div className="flex items-center">
-                      <DollarSign className="h-4 w-4 text-muted-foreground mr-1" />
-                      <span className="font-medium">₹{service.price}</span>
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Price</p>
+                      <p className="text-lg font-semibold">₹{service.price}</p>
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {service.duration} mins
+                    <div className="space-y-1">
+                      <p className="text-sm font-medium">Duration</p>
+                      <p className="text-lg font-semibold">{service.duration} mins</p>
                     </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground">Availability</span>
-                    <Switch
-                      checked={service.isAvailable}
-                      onCheckedChange={(checked) => {
-                        const updatedServices = services.map(s =>
-                          s.id === service.id ? {...s, isAvailable: checked} : s
-                        );
-                        setServices(updatedServices);
-                      }}
-                    />
+                    <Button
+                      variant="destructive"
+                      onClick={() => deleteService(service.id)}
+                    >
+                      Delete
+                    </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          ))}
-        </div>
-      )}
+          ))
+        )}
+      </div>
     </div>
   );
 };

@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -19,10 +18,12 @@ import Settings from '@/pages/Settings';
 import BecomeProvider from '@/pages/BecomeProvider';
 import ProviderDashboard from '@/pages/provider/Dashboard';
 import ProviderServices from '@/pages/provider/Services';
+import ManageServices from '@/pages/provider/ManageServices';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProviderProvider } from "./contexts/ProviderContext";
+import { ViewProvider } from "./contexts/ViewContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 // Styles
@@ -38,39 +39,40 @@ const App = () => {
   }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ProviderProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <BrowserRouter>
-              <AnimatePresence mode="wait">
-                <Routes>
-                  <Route path="/" element={<Layout />}>
-                    <Route index element={<Index />} />
-                    <Route path="services" element={<Services />} />
-                    <Route path="services/:id" element={<ProtectedRoute><ServiceDetail /></ProtectedRoute>} />
-                    <Route path="providers" element={<ProtectedRoute><Providers /></ProtectedRoute>} />
-                    <Route path="providers/:id" element={<ProtectedRoute><ProviderDetail /></ProtectedRoute>} />
-                    <Route path="how-it-works" element={<HowItWorks />} />
-                    <Route path="/settings" element={<Settings />} />
-                    <Route path="/become-provider" element={<BecomeProvider />} />
-                    <Route path="/provider/dashboard" element={<ProviderDashboard />} />
-                    <Route path="/provider/services" element={<ProviderServices />} />
-                    <Route path="/admin/dashboard" element={<AdminDashboard />} />
-                  </Route>
-                  <Route path="auth" element={<Auth />} />
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </AnimatePresence>
-              <Toaster />
-              <Sonner />
-            </BrowserRouter>
-          </TooltipProvider>
-        </ProviderProvider>
-      </AuthProvider>
-    </QueryClientProvider>
+    <BrowserRouter>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <ProviderProvider>
+            <ViewProvider>
+              <TooltipProvider>
+                <Toaster />
+                <Sonner />
+                <AnimatePresence mode="wait">
+                  <Routes>
+                    <Route element={<Layout />}>
+                      <Route index element={<Index />} />
+                      <Route path="/services" element={<Services />} />
+                      <Route path="/services/:id" element={<ProtectedRoute><ServiceDetail /></ProtectedRoute>} />
+                      <Route path="/providers" element={<ProtectedRoute><Providers /></ProtectedRoute>} />
+                      <Route path="/providers/:id" element={<ProtectedRoute><ProviderDetail /></ProtectedRoute>} />
+                      <Route path="/how-it-works" element={<HowItWorks />} />
+                      <Route path="/settings" element={<Settings />} />
+                      <Route path="/become-provider" element={<BecomeProvider />} />
+                      <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+                      <Route path="/provider/services" element={<ProviderServices />} />
+                      <Route path="/provider/manage-services" element={<ManageServices />} />
+                      <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                    </Route>
+                    <Route path="auth" element={<Auth />} />
+                    <Route path="*" element={<NotFound />} />
+                  </Routes>
+                </AnimatePresence>
+              </TooltipProvider>
+            </ViewProvider>
+          </ProviderProvider>
+        </AuthProvider>
+      </QueryClientProvider>
+    </BrowserRouter>
   );
 };
 

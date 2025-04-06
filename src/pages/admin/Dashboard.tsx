@@ -37,25 +37,36 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     checkAdminStatus();
-    loadProviders();
   }, []);
 
   const checkAdminStatus = async () => {
     try {
-      const { data, error } = await supabase
-        .from('admin_users')
-        .select('is_super_admin')
-        .eq('user_id', user?.id)
-        .single();
+      if (!user) {
+        navigate('/');
+        return;
+      }
 
-      if (error) throw error;
+      const { data: { user: userData }, error: userError } = await supabase.auth.getUser();
 
-      if (!data) {
+      if (userError) {
+        console.error('Error getting user:', userError);
+        navigate('/');
+        return;
+      }
+
+      console.log('User metadata:', userData?.user_metadata);
+      const isUserAdmin = 
+        userData?.user_metadata?.isAdmin === true || 
+        userData?.user_metadata?.role === 'admin';
+      
+      if (!isUserAdmin) {
+        console.error('User is not an admin', userData?.user_metadata);
         navigate('/');
         return;
       }
 
       setIsAdmin(true);
+      await loadProviders();
     } catch (error: any) {
       console.error('Error checking admin status:', error);
       navigate('/');
@@ -64,19 +75,31 @@ const AdminDashboard = () => {
 
   const loadProviders = async () => {
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('providers')
         .select('*')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Load error:', error);
+        throw error;
+      }
 
-      setProviders(data || []);
+      console.log('Loaded providers:', data);
+
+      // Filter providers based on their status
+      const pendingProviders = data?.filter(p => p.status === 'pending') || [];
+      const approvedProviders = data?.filter(p => p.status === 'approved') || [];
+      const rejectedProviders = data?.filter(p => p.status === 'rejected') || [];
+
+      setProviders([...pendingProviders, ...approvedProviders, ...rejectedProviders]);
     } catch (error: any) {
+      console.error('Error loading providers:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to load providers",
+        description: "Failed to load providers"
       });
     } finally {
       setLoading(false);
@@ -86,29 +109,67 @@ const AdminDashboard = () => {
   const handleStatusUpdate = async (providerId: number, status: 'pending' | 'approved' | 'rejected') => {
     try {
       setLoading(true);
-      const { error } = await supabase
+
+      // Get current user and verify admin status
+      const { data: { user: userData }, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+
+      console.log('User metadata for update:', userData?.user_metadata);
+      const isUserAdmin = 
+        userData?.user_metadata?.isAdmin === true || 
+        userData?.user_metadata?.role === 'admin';
+
+      if (!isUserAdmin) {
+        throw new Error('Permission denied: User is not an admin');
+      }
+
+      // Update the provider status
+      const { error: updateError } = await supabase
         .from('providers')
         .update({ status })
         .eq('id', providerId);
 
-      if (error) throw error;
+      if (updateError) {
+        console.error('Update error:', updateError);
+        throw updateError;
+      }
+
+      // Reload providers to get fresh data
+      await loadProviders();
 
       toast({
-        title: "Status updated",
-        description: `Provider ${status} successfully`,
+        title: "Success",
+        description: `Provider status updated to ${status}`,
       });
-
-      loadProviders();
     } catch (error: any) {
+      console.error('Error updating status:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: error.message || "Failed to update status",
+        description: error.message || "Failed to update provider status"
       });
     } finally {
       setLoading(false);
     }
   };
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const channel = supabase
+      .channel('providers_changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'providers' },
+        () => {
+          loadProviders();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, []);
 
   const getStatusBadge = (status: string) => {
     switch (status) {

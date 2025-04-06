@@ -5,46 +5,128 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/lib/supabase';
-import { Calendar, Clock, DollarSign, Star, Users, TrendingUp } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Star, Users, TrendingUp, Settings, Edit } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+
+interface ProviderData {
+  id: number;
+  status: string;
+  rating: number;
+  total_bookings: number;
+  business_name: string;
+  category: string;
+  experience: number;
+  description: string;
+  location: string;
+}
+
+interface Service {
+  id: number;
+  title: string;
+  description: string;
+  price: number;
+  duration: string;
+}
+
+interface Booking {
+  id: number;
+  user_id: string;
+  service_id: number;
+  booking_date: string;
+  booking_time: string;
+  status: string;
+  total_amount: number;
+  service: Service;
+  user: {
+    email: string;
+    user_metadata: {
+      full_name: string;
+    };
+  };
+}
 
 const ProviderDashboard = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
+  const [providerData, setProviderData] = useState<ProviderData | null>(null);
   const [stats, setStats] = useState({
     totalBookings: 0,
     totalEarnings: 0,
     totalClients: 0,
     averageRating: 0,
   });
-  const [recentBookings, setRecentBookings] = useState([]);
+  const [services, setServices] = useState<Service[]>([]);
+  const [recentBookings, setRecentBookings] = useState<Booking[]>([]);
 
   useEffect(() => {
-    loadDashboardData();
-  }, []);
+    if (user) {
+      loadDashboardData();
+    }
+  }, [user]);
 
   const loadDashboardData = async () => {
+    if (!user) return;
+
     try {
-      // In a real app, you would fetch this data from your Supabase tables
+      setLoading(true);
+
+      // Get provider data
+      const { data: providerData, error: providerError } = await supabase
+        .from('providers')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (providerError) throw providerError;
+      if (!providerData) {
+        navigate('/become-provider');
+        return;
+      }
+
+      setProviderData(providerData);
+
+      // Get services data
+      const { data: servicesData, error: servicesError } = await supabase
+        .from('provider_services')
+        .select('*')
+        .eq('provider_id', providerData.id)
+        .order('created_at', { ascending: false });
+
+      if (servicesError) throw servicesError;
+      setServices(servicesData || []);
+
+      // Get bookings data
+      const { data: bookingsData, error: bookingsError } = await supabase
+        .from('bookings')
+        .select(`
+          *,
+          service:provider_services(*),
+          user:users(email, user_metadata)
+        `)
+        .eq('provider_id', providerData.id)
+        .order('booking_date', { ascending: false })
+        .limit(5);
+
+      if (bookingsError) throw bookingsError;
+      setRecentBookings(bookingsData || []);
+
+      // Calculate stats
+      const totalBookings = providerData.total_bookings || 0;
+      const totalEarnings = bookingsData?.reduce((sum, booking) => sum + (booking.total_amount || 0), 0) || 0;
+      const uniqueClients = new Set(bookingsData?.map(booking => booking.user_id)).size;
+      const averageRating = providerData.rating || 0;
+
       setStats({
-        totalBookings: 24,
-        totalEarnings: 2400,
-        totalClients: 18,
-        averageRating: 4.8,
+        totalBookings,
+        totalEarnings,
+        totalClients: uniqueClients,
+        averageRating,
       });
 
-      setRecentBookings([
-        {
-          id: 1,
-          clientName: "John Doe",
-          service: "Plumbing",
-          date: "2025-04-06",
-          time: "10:00 AM",
-          status: "confirmed",
-        },
-        // Add more bookings
-      ]);
     } catch (error: any) {
+      console.error('Error loading dashboard data:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -55,20 +137,59 @@ const ProviderDashboard = () => {
     }
   };
 
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <Clock className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
+
+  if (!providerData) {
+    return (
+      <div className="container max-w-7xl py-10">
+        <h1 className="text-3xl font-bold mb-4">Provider Dashboard</h1>
+        <p>You are not registered as a provider. Please complete your provider registration first.</p>
+        <Button asChild className="mt-4">
+          <Link to="/become-provider">Become a Provider</Link>
+        </Button>
+      </div>
+    );
+  }
+
   return (
     <div className="container max-w-7xl py-10">
-      <div className="flex justify-between items-center mb-8">
+      {/* Header */}
+      <div className="flex justify-between items-start mb-8">
         <div>
-          <h1 className="text-3xl font-bold">Provider Dashboard</h1>
-          <p className="text-muted-foreground">Welcome back, {user?.user_metadata?.full_name || 'Provider'}</p>
+          <h1 className="text-3xl font-bold">{providerData.business_name}</h1>
+          <p className="text-muted-foreground mt-1">
+            {providerData.category} • {providerData.location}
+          </p>
+          <p className="text-sm text-muted-foreground mt-1">
+            Status: <span className={`capitalize font-medium ${providerData.status === 'approved' ? 'text-green-600' : 'text-amber-600'}`}>
+              {providerData.status}
+            </span>
+          </p>
         </div>
-        <Button>
-          View Calendar
-        </Button>
+        <div className="space-x-4">
+          <Button asChild variant="outline">
+            <Link to="/provider/services">
+              <Edit className="h-4 w-4 mr-2" />
+              Manage Services
+            </Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/settings">
+              <Settings className="h-4 w-4 mr-2" />
+              Settings
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="grid gap-6 grid-cols-2 lg:grid-cols-4 mb-8">
         <Card>
           <CardContent className="p-6">
             <div className="flex items-center justify-between">
@@ -110,7 +231,7 @@ const ProviderDashboard = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-muted-foreground">Average Rating</p>
-                <h3 className="text-2xl font-bold">{stats.averageRating}</h3>
+                <h3 className="text-2xl font-bold">{stats.averageRating.toFixed(1)}</h3>
               </div>
               <Star className="h-8 w-8 text-primary opacity-75" />
             </div>
@@ -122,48 +243,79 @@ const ProviderDashboard = () => {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Recent Bookings */}
         <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Bookings</CardTitle>
-            <CardDescription>Your latest service bookings</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Recent Bookings</CardTitle>
+              <CardDescription>Your latest service bookings</CardDescription>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/provider/bookings">View All</Link>
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentBookings.map((booking: any) => (
-                <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="font-medium">{booking.clientName}</p>
-                    <p className="text-sm text-muted-foreground">{booking.service}</p>
+              {recentBookings.length > 0 ? (
+                recentBookings.map((booking) => (
+                  <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{booking.user?.user_metadata?.full_name || booking.user?.email}</p>
+                      <p className="text-sm text-muted-foreground">{booking.service?.title}</p>
+                      <p className="text-sm text-muted-foreground">₹{booking.total_amount}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium">{new Date(booking.booking_date).toLocaleDateString()}</p>
+                      <p className="text-sm text-muted-foreground">{booking.booking_time}</p>
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${
+                        booking.status === 'completed' ? 'bg-green-100 text-green-800' :
+                        booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
+                        booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                        'bg-amber-100 text-amber-800'
+                      }`}>
+                        {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="text-sm font-medium">{booking.date}</p>
-                    <p className="text-sm text-muted-foreground">{booking.time}</p>
-                  </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-muted-foreground text-center py-4">No bookings yet</p>
+              )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Performance Stats */}
+        {/* Your Services */}
         <Card>
-          <CardHeader>
-            <CardTitle>Performance</CardTitle>
-            <CardDescription>Your service statistics</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+              <CardTitle>Your Services</CardTitle>
+              <CardDescription>Services you offer</CardDescription>
+            </div>
+            <Button variant="outline" asChild>
+              <Link to="/provider/services">Manage</Link>
+            </Button>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Response Rate</p>
-                <p className="text-sm font-medium">95%</p>
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">Completion Rate</p>
-                <p className="text-sm font-medium">98%</p>
-              </div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-medium">On-time Rate</p>
-                <p className="text-sm font-medium">92%</p>
-              </div>
+              {services.length > 0 ? (
+                services.map((service) => (
+                  <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <p className="font-medium">{service.title}</p>
+                      <p className="text-sm text-muted-foreground">₹{service.price}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">{service.duration} mins</p>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground mb-4">No services added yet</p>
+                  <Button asChild>
+                    <Link to="/provider/services">Add Service</Link>
+                  </Button>
+                </div>
+              )}
             </div>
           </CardContent>
         </Card>

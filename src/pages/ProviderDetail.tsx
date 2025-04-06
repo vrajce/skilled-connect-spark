@@ -16,6 +16,7 @@ interface Provider {
   experience: number;
   rating: number;
   total_bookings: number;
+  total_ratings: number;
   profile_picture: string;
   location: string;
   availability: string;
@@ -140,7 +141,7 @@ const ProviderDetail = () => {
                   <Star className="h-4 w-4 text-yellow-400 fill-current" />
                   <span className="ml-1 font-medium">{provider.rating}</span>
                   <span className="ml-1 text-sm text-muted-foreground">
-                    ({provider.total_bookings} reviews)
+                    ({provider.total_ratings || 0} reviews)
                   </span>
                 </div>
                 <div className="flex items-center text-sm text-muted-foreground">

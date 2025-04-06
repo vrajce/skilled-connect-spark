@@ -216,33 +216,31 @@ const Index = () => {
               className="text-4xl md:text-7xl font-bold mb-6 text-foreground leading-tight"
               variants={fadeInUp}
             >
-              Find <span className="text-gradient-primary">Skilled Professionals</span> For All Your Service Needs
+              Ready to Find the <span className="text-gradient-primary">Perfect Service Provider</span>
             </motion.h1>
             
             <motion.p 
               className="text-muted-foreground text-lg md:text-xl mb-8 max-w-2xl mx-auto"
               variants={fadeInUp}
             >
-              Connect with verified service providers near you for plumbing, electrical work, 
-              mehendi art, carpentry, and more. Quality service at your fingertips.
+              Join thousands of satisfied customers who found quality service providers through SkilledConnect
             </motion.p>
             
             <motion.div 
               className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto"
               variants={fadeInUp}
             >
-              <div className="relative w-full sm:w-3/4">
-                <Input 
-                  type="text" 
-                  placeholder="What service do you need?" 
-                  className="pr-12 h-12 rounded-full text-base"
-                />
-                <MapPin className="absolute right-4 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
-              </div>
-              <Button size="lg" className="w-full sm:w-auto bg-gradient-primary hover:opacity-90 rounded-full">
-                Find Services
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+              <Link to="/services" className="w-full sm:w-auto">
+                <Button size="lg" className="w-full bg-gradient-primary hover:opacity-90 rounded-full">
+                  Find Services Now
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+              <Link to="/become-provider" className="w-full sm:w-auto">
+                <Button variant="outline" size="lg" className="w-full rounded-full">
+                  Become a Provider
+                </Button>
+              </Link>
             </motion.div>
             
             <motion.div 

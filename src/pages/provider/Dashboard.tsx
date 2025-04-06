@@ -12,7 +12,9 @@ interface ProviderData {
   id: number;
   status: string;
   rating: number;
+  total_ratings: number;
   total_bookings: number;
+  total_earnings: number;
   business_name: string;
   category: string;
   experience: number;
@@ -22,7 +24,7 @@ interface ProviderData {
 
 interface Service {
   id: number;
-  title: string;
+  name: string;
   description: string;
   price: number;
   duration: string;
@@ -30,18 +32,27 @@ interface Service {
 
 interface Booking {
   id: number;
-  user_id: string;
-  service_id: number;
+  created_at: string;
   booking_date: string;
-  booking_time: string;
+  preferred_time: string;
   status: string;
   total_amount: number;
-  service: Service;
+  user_id: string;
+  users?: {
+    email: string;
+    raw_user_meta_data?: {
+      full_name?: string;
+    };
+  };
   user: {
     email: string;
     user_metadata: {
-      full_name: string;
+      full_name?: string;
     };
+  };
+  service: {
+    name: string;
+    price: number;
   };
 }
 
@@ -75,16 +86,34 @@ const ProviderDashboard = () => {
       // Get provider data
       const { data: providerData, error: providerError } = await supabase
         .from('providers')
-        .select('*')
+        .select(`
+          id,
+          status,
+          rating,
+          total_ratings,
+          total_bookings,
+          total_earnings,
+          business_name,
+          category,
+          experience,
+          description,
+          location
+        `)
         .eq('user_id', user.id)
         .single();
 
-      if (providerError) throw providerError;
+      if (providerError) {
+        console.error('Provider error:', providerError);
+        throw providerError;
+      }
+      
       if (!providerData) {
+        console.log('No provider data found');
         navigate('/become-provider');
         return;
       }
 
+      console.log('Provider data:', providerData);
       setProviderData(providerData);
 
       // Get services data
@@ -94,28 +123,61 @@ const ProviderDashboard = () => {
         .eq('provider_id', providerData.id)
         .order('created_at', { ascending: false });
 
-      if (servicesError) throw servicesError;
+      if (servicesError) {
+        console.error('Services error:', servicesError);
+        throw servicesError;
+      }
+
+      console.log('Services data:', servicesData);
       setServices(servicesData || []);
 
-      // Get bookings data
+      // Get bookings with service information
       const { data: bookingsData, error: bookingsError } = await supabase
         .from('bookings')
         .select(`
-          *,
-          service:provider_services(*),
-          user:users(email, user_metadata)
+          id,
+          created_at,
+          booking_date,
+          preferred_time,
+          status,
+          total_amount,
+          user_id,
+          service:provider_services!bookings_service_id_fkey (
+            title,
+            price
+          )
         `)
         .eq('provider_id', providerData.id)
+        .eq('status', 'accepted')
         .order('booking_date', { ascending: false })
         .limit(5);
 
-      if (bookingsError) throw bookingsError;
-      setRecentBookings(bookingsData || []);
+      if (bookingsError) {
+        console.error('Bookings error:', bookingsError);
+        throw bookingsError;
+      }
 
-      // Calculate stats
-      const totalBookings = providerData.total_bookings || 0;
-      const totalEarnings = bookingsData?.reduce((sum, booking) => sum + (booking.total_amount || 0), 0) || 0;
-      const uniqueClients = new Set(bookingsData?.map(booking => booking.user_id)).size;
+      // Transform bookings data
+      const transformedBookings = (bookingsData || []).map(booking => ({
+        ...booking,
+        service: {
+          name: booking.service?.title || 'Unknown Service',
+          price: booking.service?.price || 0
+        },
+        user: {
+          email: `User ${booking.user_id.slice(0, 8)}`,
+          user_metadata: {
+            full_name: null
+          }
+        }
+      }));
+
+      setRecentBookings(transformedBookings);
+
+      // Calculate stats with actual bookings count
+      const totalBookings = bookingsData?.length || 0;
+      const totalEarnings = transformedBookings.reduce((sum, booking) => sum + (booking.total_amount || 0), 0);
+      const uniqueClients = new Set(transformedBookings.map(booking => booking.user_id)).size;
       const averageRating = providerData.rating || 0;
 
       setStats({
@@ -259,16 +321,16 @@ const ProviderDashboard = () => {
                   <div key={booking.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <p className="font-medium">{booking.user?.user_metadata?.full_name || booking.user?.email}</p>
-                      <p className="text-sm text-muted-foreground">{booking.service?.title}</p>
+                      <p className="text-sm text-muted-foreground">{booking.service?.name}</p>
                       <p className="text-sm text-muted-foreground">₹{booking.total_amount}</p>
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-medium">{new Date(booking.booking_date).toLocaleDateString()}</p>
-                      <p className="text-sm text-muted-foreground">{booking.booking_time}</p>
+                      <p className="text-sm text-muted-foreground">{booking.preferred_time}</p>
                       <span className={`text-xs font-medium px-2 py-1 rounded-full ${
                         booking.status === 'completed' ? 'bg-green-100 text-green-800' :
-                        booking.status === 'cancelled' ? 'bg-red-100 text-red-800' :
-                        booking.status === 'confirmed' ? 'bg-blue-100 text-blue-800' :
+                        booking.status === 'rejected' ? 'bg-red-100 text-red-800' :
+                        booking.status === 'accepted' ? 'bg-blue-100 text-blue-800' :
                         'bg-amber-100 text-amber-800'
                       }`}>
                         {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
@@ -300,7 +362,7 @@ const ProviderDashboard = () => {
                 services.map((service) => (
                   <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
-                      <p className="font-medium">{service.title}</p>
+                      <p className="font-medium">{service.name}</p>
                       <p className="text-sm text-muted-foreground">₹{service.price}</p>
                     </div>
                     <div className="text-right">

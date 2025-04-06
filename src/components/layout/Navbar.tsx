@@ -11,7 +11,8 @@ import {
   Settings,
   Search,
   Shield,
-  SwitchCamera
+  SwitchCamera,
+  CalendarDays
 } from "lucide-react";
 import { useAuth } from '@/contexts/AuthContext';
 import { useView } from '@/contexts/ViewContext';
@@ -28,6 +29,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { cn } from '@/lib/utils';
+import { NotificationDropdown } from '@/components/notifications';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -132,66 +134,61 @@ const Navbar = () => {
             </Button>
           )}
 
-          {user ? (
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-                  <Avatar className="h-8 w-8">
-                    <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name} />
-                    <AvatarFallback>
-                      {user.user_metadata?.full_name?.[0] || user.email?.[0]?.toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>
-                  {user.user_metadata?.full_name || user.email}
-                </DropdownMenuLabel>
-                <DropdownMenuSeparator />
-                {isAdmin && (
-                  <>
-                    <DropdownMenuItem asChild>
-                      <Link to="/admin/dashboard" className="flex items-center">
-                        <Shield className="mr-2 h-4 w-4" />
-                        <span>Admin Dashboard</span>
-                      </Link>
+          {user && (
+            <div className="flex items-center gap-2">
+              <NotificationDropdown />
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                    <Avatar className="h-8 w-8">
+                      <AvatarImage src={user.user_metadata?.avatar_url} alt={user.user_metadata?.full_name} />
+                      <AvatarFallback>
+                        {user.user_metadata?.full_name?.[0] || user.email?.[0]?.toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuLabel>
+                    {user.user_metadata?.full_name || user.email}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  {isAdmin && (
+                    <>
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin/dashboard" className="flex items-center">
+                          <Shield className="mr-2 h-4 w-4" />
+                          <span>Admin Dashboard</span>
+                        </Link>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+                  {isProvider && (
+                    <DropdownMenuItem onClick={toggleView}>
+                      <SwitchCamera className="mr-2 h-4 w-4" />
+                      <span>Switch to {isProviderView ? 'User' : 'Provider'} View</span>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                  </>
-                )}
-                {isProvider && (
-                  <DropdownMenuItem onClick={toggleView}>
-                    <SwitchCamera className="mr-2 h-4 w-4" />
-                    <span>Switch to {isProviderView ? 'User' : 'Provider'} View</span>
+                  )}
+                  <DropdownMenuItem asChild>
+                    <Link to="/bookings">
+                      <CalendarDays className="mr-2 h-4 w-4" />
+                      <span>My Bookings</span>
+                    </Link>
                   </DropdownMenuItem>
-                )}
-                <DropdownMenuItem asChild>
-                  <Link to="/settings">
-                    <Settings className="mr-2 h-4 w-4" />
-                    <span>Settings</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>Log out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          ) : (
-            <div className="flex items-center space-x-4">
-              <Button variant="ghost" asChild>
-                <Link to="/auth">
-                  <LogIn className="mr-2 h-4 w-4" />
-                  Login
-                </Link>
-              </Button>
-              <Button asChild>
-                <Link to="/become-provider">
-                  Become a Provider
-                </Link>
-              </Button>
+                  <DropdownMenuItem asChild>
+                    <Link to="/settings">
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>Settings</span>
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOut}>
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Log out</span>
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
         </div>
@@ -267,6 +264,16 @@ const Navbar = () => {
                     Switch to {isProviderView ? 'User' : 'Provider'} View
                   </button>
                 )}
+                <Link
+                  to="/bookings"
+                  className={`px-3 py-2.5 rounded-md text-sm font-medium ${
+                    isActive('/bookings') ? "bg-primary/10 text-primary" : "text-foreground/80"
+                  }`}
+                  onClick={() => setIsOpen(false)}
+                >
+                  <CalendarDays className="mr-2 h-4 w-4 inline" />
+                  My Bookings
+                </Link>
                 <Link
                   to="/settings"
                   className={`px-3 py-2.5 rounded-md text-sm font-medium ${

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
@@ -27,7 +26,7 @@ import { Separator } from '@/components/ui/separator';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
 // Animation variants
@@ -80,6 +79,7 @@ const Auth = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [agreeTerms, setAgreeTerms] = useState(false);
+  const [isForgotPassword, setIsForgotPassword] = useState(false);
 
   useEffect(() => {
     if (user) {
@@ -216,6 +216,33 @@ const Auth = () => {
     }
   };
 
+  const handleForgotPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Check your email for the password reset link",
+      });
+      setIsForgotPassword(false);
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to send reset password email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <div className="min-h-screen py-16 flex items-center justify-center relative overflow-hidden">
       {/* Background elements */}
@@ -291,9 +318,14 @@ const Auth = () => {
                       <div className="space-y-2">
                         <div className="flex items-center justify-between">
                           <Label htmlFor="password">Password</Label>
-                          <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                          <Button
+                            type="button"
+                            variant="link"
+                            className="px-0 text-amber-600 hover:text-amber-700"
+                            onClick={() => setIsForgotPassword(true)}
+                          >
                             Forgot password?
-                          </Link>
+                          </Button>
                         </div>
                         <div className="relative">
                           <Input
@@ -569,6 +601,54 @@ const Auth = () => {
           </motion.div>
         </motion.div>
       </div>
+
+      {isForgotPassword && (
+        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50">
+          <div className="container flex h-screen w-screen flex-col items-center justify-center">
+            <Card className="w-full max-w-md border-amber-100">
+              <CardHeader className="space-y-1">
+                <CardTitle className="text-2xl text-center">Forgot Password</CardTitle>
+                <CardDescription className="text-center">
+                  Enter your email address and we'll send you a link to reset your password
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="reset-email">Email</Label>
+                    <Input
+                      id="reset-email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="border-amber-100 focus:border-amber-200"
+                    />
+                  </div>
+                  <div className="flex space-x-2">
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-amber-100 hover:border-amber-200"
+                      onClick={() => setIsForgotPassword(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      type="submit"
+                      className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
+                      disabled={loading}
+                    >
+                      {loading ? "Sending..." : "Send Reset Link"}
+                    </Button>
+                  </div>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -19,12 +19,15 @@ import BecomeProvider from '@/pages/BecomeProvider';
 import ProviderDashboard from '@/pages/provider/Dashboard';
 import ProviderServices from '@/pages/provider/Services';
 import ManageServices from '@/pages/provider/ManageServices';
+import ManageBookings from '@/pages/provider/ManageBookings';
 import AdminDashboard from '@/pages/admin/Dashboard';
 import { motion, AnimatePresence } from "framer-motion";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProviderProvider } from "./contexts/ProviderContext";
 import { ViewProvider } from "./contexts/ViewContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import UserBookings from '@/pages/user/UserBookings';
+import ResetPassword from './pages/ResetPassword';
 
 // Styles
 import "@/index.css";
@@ -58,12 +61,15 @@ const App = () => {
                       <Route path="/how-it-works" element={<HowItWorks />} />
                       <Route path="/settings" element={<Settings />} />
                       <Route path="/become-provider" element={<BecomeProvider />} />
+                      <Route path="/bookings" element={<ProtectedRoute><UserBookings /></ProtectedRoute>} />
                       <Route path="/provider/dashboard" element={<ProviderDashboard />} />
                       <Route path="/provider/services" element={<ProviderServices />} />
                       <Route path="/provider/manage-services" element={<ManageServices />} />
+                      <Route path="/provider/bookings" element={<ManageBookings />} />
                       <Route path="/admin/dashboard" element={<AdminDashboard />} />
                     </Route>
                     <Route path="auth" element={<Auth />} />
+                    <Route path="/reset-password" element={<ResetPassword />} />
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </AnimatePresence>

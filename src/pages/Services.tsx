@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -42,6 +42,7 @@ import {
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface Category {
   id: number;
@@ -92,20 +93,21 @@ const iconMap: { [key: string]: React.ReactNode } = {
 };
 
 const Services = () => {
+  const { user } = useAuth();
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 10000]);
   const [sortBy, setSortBy] = useState<string>('recommended');
+  const [currentProviderId, setCurrentProviderId] = useState<number | null>(null);
 
-  useEffect(() => {
-    loadServices();
-  }, []);
-
-  const loadServices = async () => {
+  // Define loadServices first since it's used by checkProviderStatus
+  const loadServices = useCallback(async () => {
     try {
-      const { data, error } = await supabase
+      setLoading(true);
+      console.log('Loading services, currentProviderId:', currentProviderId);
+      let query = supabase
         .from('provider_services')
         .select(`
           *,
@@ -120,15 +122,67 @@ const Services = () => {
         `)
         .eq('providers.status', 'approved');
 
+      // If user is a provider, exclude their own services
+      if (currentProviderId) {
+        console.log('Excluding provider ID from services:', currentProviderId);
+        query = query.neq('provider_id', currentProviderId);
+      }
+
+      const { data, error } = await query;
+
       if (error) throw error;
-      console.log('Loaded services:', data);
+      console.log('Loaded services:', data?.length || 0);
       setServices(data || []);
     } catch (error) {
       console.error('Error loading services:', error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentProviderId]);
+
+  // Define checkProviderStatus after loadServices
+  const checkProviderStatus = useCallback(async () => {
+    try {
+      console.log('Checking provider status for user:', user?.id);
+      const { data, error } = await supabase
+        .from('providers')
+        .select('id')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      
+      if (data) {
+        console.log('User is a provider with ID:', data.id);
+        setCurrentProviderId(data.id);
+      } else {
+        console.log('User is not a provider');
+      }
+      
+      // Load services after checking provider status
+      loadServices();
+    } catch (error) {
+      console.error('Error checking provider status:', error);
+      // Still load services even if provider check fails
+      loadServices();
+    }
+  }, [user, loadServices]);
+
+  // Initial load effect
+  useEffect(() => {
+    if (user) {
+      checkProviderStatus();
+    } else {
+      loadServices();
+    }
+  }, [user, checkProviderStatus, loadServices]);
+
+  // Reload services when currentProviderId changes
+  useEffect(() => {
+    if (currentProviderId !== null) {
+      loadServices();
+    }
+  }, [currentProviderId, loadServices]);
 
   const filteredServices = services
     .filter(service => 
@@ -148,7 +202,7 @@ const Services = () => {
         case 'rating':
           return (b.provider.rating || 0) - (a.provider.rating || 0);
         default:
-          return (b.provider.total_bookings || 0) - (a.provider.total_bookings || 0);
+          return (b.provider.total_ratings || 0) - (a.provider.total_ratings || 0);
       }
     });
 
@@ -172,13 +226,13 @@ const Services = () => {
                 placeholder="Search services or providers..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10"
+                className="pl-10 border-amber-200 focus:border-amber-300 focus:ring-amber-300"
               />
             </div>
           </div>
           <div className="flex gap-2">
             <Select value={sortBy} onValueChange={setSortBy}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] border-amber-200 focus:border-amber-300 focus:ring-amber-300">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
               <SelectContent>
@@ -188,7 +242,7 @@ const Services = () => {
                 <SelectItem value="rating">Highest Rated</SelectItem>
               </SelectContent>
             </Select>
-            <Button variant="outline" className="flex items-center gap-2">
+            <Button variant="outline" className="flex items-center gap-2 border-amber-200 hover:border-amber-300 hover:bg-amber-50">
               <Filter className="h-4 w-4" />
               Filters
             </Button>
@@ -204,7 +258,7 @@ const Services = () => {
           </div>
         ) : (
           filteredServices.map(service => (
-            <Card key={service.id} className="flex flex-col h-full">
+            <Card key={service.id} className="flex flex-col h-full border-amber-100 hover:border-amber-200 transition-colors">
               <CardHeader>
                 <div className="flex justify-between items-start">
                   <div>
@@ -241,8 +295,8 @@ const Services = () => {
                       <span>{service.duration} mins</span>
                     </div>
                   </div>
-                  <Button className="w-full mt-4" asChild>
-                    <Link to={`/book/${service.id}`}>
+                  <Button className="w-full mt-4 bg-primary text-primary-foreground hover:bg-primary/90" asChild>
+                    <Link to={`/services/${service.id}`}>
                       Book Now
                     </Link>
                   </Button>
@@ -255,9 +309,9 @@ const Services = () => {
 
       {/* FAQ Section */}
       <div className="mt-16">
-        <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
+        <h2 className="text-2xl font-bold text-center mb-8 text-amber-800">Frequently Asked Questions</h2>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          <Card>
+          <Card className="border-amber-100">
             <CardHeader>
               <CardTitle className="text-lg">How do I book a service?</CardTitle>
             </CardHeader>
@@ -267,7 +321,7 @@ const Services = () => {
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-amber-100">
             <CardHeader>
               <CardTitle className="text-lg">How are service providers vetted?</CardTitle>
             </CardHeader>
@@ -277,7 +331,7 @@ const Services = () => {
               </p>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="border-amber-100">
             <CardHeader>
               <CardTitle className="text-lg">What payment methods are accepted?</CardTitle>
             </CardHeader>

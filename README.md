@@ -1,10 +1,10 @@
-# 🚀 Skilled Connect Spark
+# 🚀 SevaBee 
 
-Welcome to the **Skilled Connect Spark** project repository! This project is primarily written in **TypeScript** and includes some **PLpgSQL** and **CSS**.
+Welcome to the **SevaBee** project repository! 
 
 ## 📜 Project Description
 
-SkilledConnect is an innovative web application designed to connect users with skilled professionals and small-scale service providers for various needs. Unlike existing delivery or convenience apps (e.g., Swiggy, Blinkit), this platform focuses on professionals like plumbers, electricians, mehendi artists, and other small-scale service providers, enabling them to showcase their skills and get rated based on their performance. The platform is built to empower local businesses and individuals by providing them with opportunities to grow while offering users an easy and efficient way to access these services.
+SevaBee is an innovative web application designed to connect users with skilled professionals and small-scale service providers for various needs. Unlike existing delivery or convenience apps (e.g., Swiggy, Blinkit), this platform focuses on professionals like plumbers, electricians, mehendi artists, and other small-scale service providers, enabling them to showcase their skills and get rated based on their performance. The platform is built to empower local businesses and individuals by providing them with opportunities to grow while offering users an easy and efficient way to access these services.
 
 ## 🌟 Key Features
 

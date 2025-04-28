@@ -100,6 +100,7 @@ const ServiceDetail = () => {
   const [timeSlot, setTimeSlot] = useState<string>('');
   const [bookingLoading, setBookingLoading] = useState(false);
   const [bookedSlots, setBookedSlots] = useState<string[]>([]);
+  const [slotsLoading, setSlotsLoading] = useState(false);
 
   useEffect(() => {
     const init = async () => {
@@ -122,11 +123,46 @@ const ServiceDetail = () => {
   }, [id]);
 
   // Add new effect to fetch booked slots when date changes
+  // Set up real-time subscription when service is loaded
   useEffect(() => {
-    if (service?.id && service?.provider?.id && bookingDate) {
+    if (service?.id && service?.provider?.id) {
+      const subscription = supabase
+        .channel('booking-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'bookings',
+            filter: `provider_id=eq.${service.provider.id} AND service_id=eq.${service.id}`
+          },
+          (payload: { new: Record<string, any> | null; old: Record<string, any> | null }) => {
+            // Refresh booked slots when any booking changes
+            // but only if we're currently viewing the date that changed
+            if (bookingDate) {
+              const formattedCurrentDate = format(bookingDate, 'yyyy-MM-dd');
+              const changedDate = payload.new?.booking_date || payload.old?.booking_date;
+              if (formattedCurrentDate === changedDate) {
+                console.log('Booking changed for current date, refreshing slots...');
+                fetchBookedSlots();
+              }
+            }
+          }
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    }
+  }, [service?.id, service?.provider?.id]);
+
+  // Fetch booked slots whenever date changes
+  useEffect(() => {
+    if (bookingDate && service?.id && service?.provider?.id) {
       fetchBookedSlots();
     }
-  }, [service?.id, service?.provider?.id, bookingDate]);
+  }, [bookingDate]);
 
   const fetchServiceDetails = async () => {
     try {
@@ -196,26 +232,42 @@ const ServiceDetail = () => {
   const fetchBookedSlots = async () => {
     if (!service?.id || !service?.provider?.id || !bookingDate) return;
 
+    setSlotsLoading(true);
     try {
       const formattedDate = format(bookingDate, 'yyyy-MM-dd');
       
+      // Get all pending or confirmed bookings for the selected date
       const { data, error } = await supabase
         .from('bookings')
         .select('preferred_time')
         .eq('provider_id', service.provider.id)
         .eq('service_id', service.id)
         .eq('booking_date', formattedDate)
-        .eq('status', 'pending');
+        .in('status', ['pending', 'confirmed']);
 
       if (error) {
         console.error('Error fetching booked slots:', error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to fetch available slots. Please try again."
+        });
         return;
       }
 
       const bookedTimes = data?.map(booking => booking.preferred_time) || [];
+      console.log('Updated booked slots:', bookedTimes);
       setBookedSlots(bookedTimes);
+      setSlotsLoading(false);
     } catch (error) {
       console.error('Error fetching booked slots:', error);
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to fetch available slots. Please try again."
+      });
+    } finally {
+      setSlotsLoading(false);
     }
   };
 
@@ -229,6 +281,10 @@ const ServiceDetail = () => {
       navigate('/auth');
       return;
     }
+
+    // Clear the selected time slot immediately to prevent double booking
+    const selectedTimeSlot = timeSlot;
+    setTimeSlot('');
 
     if (!bookingDate || !timeSlot) {
       toast({
@@ -264,6 +320,7 @@ const ServiceDetail = () => {
       }
 
       if (existingBooking) {
+        setTimeSlot(selectedTimeSlot); // Restore the time slot selection if booking fails
         throw new Error('This time slot is already booked. Please select a different time.');
       }
       
@@ -276,7 +333,8 @@ const ServiceDetail = () => {
           service_id: service.id,
           booking_date: formattedDate,
           preferred_time: timeSlot,
-          status: 'pending'
+          status: 'pending',
+          total_amount: service.price
         });
 
       if (error) {
@@ -297,6 +355,8 @@ const ServiceDetail = () => {
         title: "Request Failed",
         description: error.message || "Failed to send service request"
       });
+      // Restore the time slot selection if booking fails
+      setTimeSlot(selectedTimeSlot);
     } finally {
       setBookingLoading(false);
     }
@@ -424,10 +484,25 @@ const ServiceDetail = () => {
                                     </div>
                                     
                 <div className="space-y-2">
-                  <label className="font-medium">Select Time</label>
-                                      <Select value={timeSlot} onValueChange={setTimeSlot}>
-                                        <SelectTrigger>
-                      <SelectValue placeholder="Choose a time slot" />
+                  <label className="font-medium flex items-center justify-between">
+                    <span>Select Time</span>
+                    {bookingDate && (
+                      <span className="text-xs text-muted-foreground">
+                        {slotsLoading ? (
+                          <span className="flex items-center gap-1">
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                            Checking availability...
+                          </span>
+                        ) : (
+                          `${bookedSlots.length} of ${timeSlots.length} slots booked`
+                        )}
+                      </span>
+                    )}
+                  </label>
+                  <Select value={timeSlot} onValueChange={setTimeSlot} disabled={slotsLoading}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={slotsLoading ? "Loading slots..." : "Choose a time slot"} />
+                      {slotsLoading && <Loader2 className="h-4 w-4 animate-spin ml-2" />}
                                         </SelectTrigger>
                                         <SelectContent>
                       {timeSlots.map((slot) => {
@@ -436,13 +511,22 @@ const ServiceDetail = () => {
                           <SelectItem 
                             key={slot.value} 
                             value={slot.value}
-                                    className={cn(
+                            className={cn(
+                              "flex items-center justify-between gap-2",
                               isBooked && "opacity-50 cursor-not-allowed text-muted-foreground"
                             )}
                             disabled={isBooked}
                           >
-                            {slot.label}
-                            {isBooked && " (Booked)"}
+                            <span>{slot.label}</span>
+                            {isBooked ? (
+                              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+                                Unavailable
+                              </span>
+                            ) : (
+                              <span className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded">
+                                Available
+                              </span>
+                            )}
                               </SelectItem>
                         );
                       })}

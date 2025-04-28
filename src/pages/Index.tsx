@@ -14,7 +14,7 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from "@/components/ui/carousel";
-import BeeBackground from '@/components/BeeBackground';
+// import BeeBackground from '@/components/BeeBackground';
 
 // Import helper utility for animations
 import { cn } from '@/lib/utils';
@@ -118,299 +118,195 @@ const Index = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="min-h-[calc(100vh-4rem)] bg-gradient-to-b from-primary/5 to-background relative flex items-center justify-center overflow-hidden">
+      <section className="min-h-[calc(100vh-4rem)] bg-background relative flex items-start md:items-center justify-center pt-16 md:pt-0 overflow-hidden">
         {/* Background animation */}
-        <BeeBackground />
+        {/* <BeeBackground /> */}
         
-        <div className="container px-4 z-10 -mt-16">
-          <motion.div 
-            className="text-center max-w-4xl mx-auto"
-            initial="hidden"
-            animate="visible"
-            variants={staggerContainer}
-          >
-            <motion.div 
-              className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-6"
-              variants={fadeInUp}
-            >
-              <span className="inline-block w-2 h-2 rounded-full bg-primary animate-pulse"></span>
-              Connecting Skills with Needs
-            </motion.div>
+        <div className="container px-6 z-10">
+          <div className="max-w-3xl mx-auto md:ml-8 lg:ml-16 text-left">
+            <div className="inline-flex items-center gap-2 bg-primary/5 text-primary px-3 py-1 text-sm mb-8">
+              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+              Available in your area
+            </div>
             
-            <motion.h1 
-              className="text-4xl md:text-7xl font-bold mb-6 text-foreground leading-tight"
-              variants={fadeInUp}
-            >
-              Ready to Find the <span className="text-gradient-primary">Perfect Service Provider</span>
-            </motion.h1>
+            <h1 className="text-4xl md:text-6xl font-bold mb-5 text-foreground leading-tight">
+              Find Local Service<br />Providers You Can Trust
+            </h1>
             
-            <motion.p 
-              className="text-muted-foreground text-lg md:text-xl mb-8 max-w-2xl mx-auto"
-              variants={fadeInUp}
-            >
-              Join thousands of satisfied customers who found quality service providers through SevaBee
-            </motion.p>
+            <p className="text-muted-foreground text-lg mb-8 max-w-lg">
+              Connect with verified local professionals for your home services, repairs, and more. Quick, reliable, and trusted by your community.
+            </p>
             
-            <motion.div 
-              className="flex flex-col sm:flex-row items-center justify-center gap-4 max-w-2xl mx-auto"
-              variants={fadeInUp}
-            >
-              <Link to="/services" className="w-full sm:w-auto">
-                <Button size="lg" className="w-full bg-gradient-primary hover:opacity-90 rounded-full">
-                  Find Services Now
+            <div className="flex flex-col sm:flex-row items-start gap-3">
+              <Link to="/services">
+                <Button size="lg" className="bg-primary hover:bg-primary/90">
+                  Browse Services
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>
-              <Link to="/become-provider" className="w-full sm:w-auto">
-                <Button variant="outline" size="lg" className="w-full rounded-full">
-                  Become a Provider
+              <Link to="/become-provider">
+                <Button variant="outline" size="lg">
+                  Join as Provider
                 </Button>
               </Link>
-            </motion.div>
+            </div>
             
-            <motion.div 
-              className="mt-8 flex flex-wrap items-center justify-center gap-4 text-sm text-muted-foreground"
-              variants={fadeInUp}
-            >
+            <div className="mt-10 space-y-2.5 text-sm text-muted-foreground">
               <div className="flex items-center">
-                <CheckCircle2 className="mr-2 h-4 w-4 text-primary" />
-                <span>Verified Professionals</span>
+                <CheckCircle2 className="mr-2 h-4 w-4 text-primary/80" />
+                <span>Background-checked professionals</span>
               </div>
               <div className="flex items-center">
-                <ThumbsUp className="mr-2 h-4 w-4 text-primary" />
-                <span>Satisfaction Guaranteed</span>
+                <ThumbsUp className="mr-2 h-4 w-4 text-primary/80" />
+                <span>100% satisfaction guarantee</span>
               </div>
               <div className="flex items-center">
-                <Shield className="mr-2 h-4 w-4 text-primary" />
-                <span>Secure Payments</span>
+                <Shield className="mr-2 h-4 w-4 text-primary/80" />
+                <span>Secure & hassle-free payments</span>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         </div>
         
-        {/* Bottom wave */}
-        <div className="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-t from-background to-transparent"></div>
+        {/* Simple bottom fade */}
+        <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent opacity-75"></div>
       </section>
 
       {/* Service Categories Section */}
-      <section className="py-20 bg-background relative">
-        <div className="container px-4">
-          <motion.div 
-            className="text-center max-w-3xl mx-auto mb-16"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
-            <motion.h2 
-              className="text-3xl md:text-4xl font-bold mb-4"
-              variants={fadeInUp}
-            >
-              Find Services For Your <span className="text-gradient-primary">Every Need</span>
-            </motion.h2>
-            <motion.p 
-              className="text-muted-foreground"
-              variants={fadeInUp}
-            >
-              Browse through our categories of skilled professionals ready to help with your requirements
-            </motion.p>
-          </motion.div>
+      <section className="py-16 md:py-20 bg-gray-50/50">
+        <div className="container px-6">
+          <div className="max-w-2xl mx-auto mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">
+              Services We Offer
+            </h2>
+            <p className="text-muted-foreground text-center">
+              Find trusted professionals for all your home service needs
+            </p>
+          </div>
 
-          <motion.div 
-            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {serviceCategories.map((category, index) => (
-              <motion.div
-                key={category.id}
-                variants={fadeInUp}
-                transition={{ delay: index * 0.1 }}
-              >
+              <div key={category.id} className="group">
                 <Link to={`/services/${category.name.toLowerCase()}`} className="block">
-                  <Card className="h-full transition-all duration-300 hover:shadow-lg hover:border-primary/50 group">
-                    <CardContent className="p-6 flex flex-col items-center text-center">
-                      <div className={`${category.color} w-16 h-16 rounded-full flex items-center justify-center mb-4 text-white shadow-md group-hover:scale-110 transition-transform duration-300`}>
+                  <Card className="h-full hover:shadow-md transition-shadow duration-200 border border-gray-100">
+                    <CardContent className="p-5">
+                      <div className={`${category.color} w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-white`}>
                         {iconMap[category.icon]}
                       </div>
-                      <h3 className="text-xl font-bold mb-2">{category.name}</h3>
-                      <p className="text-muted-foreground mb-4">{category.description}</p>
-                      <Button variant="ghost" className="mt-auto group-hover:text-primary">
-                        Explore services
-                        <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                      <h3 className="text-lg font-semibold mb-2">{category.name}</h3>
+                      <p className="text-muted-foreground text-sm mb-4">{category.description}</p>
+                      <Button variant="ghost" size="sm" className="px-0 hover:bg-transparent hover:text-primary">
+                        View Details
+                        <ArrowRight className="ml-1.5 h-4 w-4" />
                       </Button>
                     </CardContent>
                   </Card>
                 </Link>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
 
-          <motion.div 
-            className="mt-12 text-center"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
-          >
-            <Link to="/services">
-              <Button variant="outline" size="lg" className="rounded-full">
-                View All Services
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+          <div className="mt-10 text-center">
+            <Link to="/services" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center">
+              View all available services
+              <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* How It Works Section */}
-      <section className="py-20 bg-gradient-to-br from-primary/5 to-secondary/5 relative overflow-hidden">
-        {/* Decorative elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div className="absolute -right-24 -bottom-24 w-64 h-64 bg-primary/5 rounded-full"></div>
-          <div className="absolute -left-20 top-20 w-40 h-40 bg-secondary/5 rounded-full"></div>
-        </div>
+      <section className="py-16 md:py-20 bg-white border-y border-gray-100">
         
         <div className="container px-4 relative z-10">
-          <motion.div 
-            className="text-center max-w-3xl mx-auto mb-16"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
-            <motion.h2 
-              className="text-3xl md:text-4xl font-bold mb-4"
-              variants={fadeInUp}
-            >
-              How <span className="text-gradient-primary">SevaBee</span> Works
-            </motion.h2>
-            <motion.p 
-              className="text-muted-foreground"
-              variants={fadeInUp}
-            >
-              Get the service you need in just a few simple steps
-            </motion.p>
-          </motion.div>
+          <div className="max-w-2xl mx-auto mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3 text-center">
+              How It Works
+            </h2>
+            <p className="text-muted-foreground text-center text-sm md:text-base">
+              Get your service needs met in three easy steps
+            </p>
+          </div>
 
-          <motion.div 
-            className="grid grid-cols-1 md:grid-cols-3 gap-8 relative"
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, margin: "-100px" }}
-            variants={staggerContainer}
-          >
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
             {/* Connecting line (visible on md screens and up) */}
             <div className="absolute top-24 left-0 right-0 h-0.5 bg-primary/20 hidden md:block"></div>
             
             {/* Step 1 */}
-            <motion.div 
-              className="relative"
-              variants={fadeInUp}
-            >
-              <div className="bg-background rounded-xl p-6 text-center relative z-10 h-full glass-card hover:shadow-lg transition-all duration-300">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Search className="h-6 w-6 text-primary" />
+            <div className="relative z-10">
+              <div className="bg-white p-5 relative border border-gray-100 rounded-lg">
+                <div className="w-10 h-10 bg-primary/10 rounded-md flex items-center justify-center mb-4">
+                  <Search className="h-5 w-5 text-primary" />
                 </div>
-                <div className="absolute -top-3 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm">1</div>
-                <h3 className="text-xl font-semibold mb-4">Search Services</h3>
-                <p className="text-muted-foreground">
-                  Browse through various service categories or search for specific services you need.
+                <span className="text-xs font-medium text-primary mb-3 block">STEP 1</span>
+                <h3 className="text-base font-medium mb-2">Search Services</h3>
+                <p className="text-muted-foreground text-sm">
+                  Browse categories or search for the service you need
                 </p>
               </div>
-            </motion.div>
+            </div>
 
             {/* Step 2 */}
-            <motion.div 
-              className="relative"
-              variants={fadeInUp}
-            >
-              <div className="bg-background rounded-xl p-6 text-center relative z-10 h-full glass-card hover:shadow-lg transition-all duration-300">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Star className="h-6 w-6 text-primary" />
+            <div className="relative z-10">
+              <div className="bg-white p-5 relative border border-gray-100 rounded-lg">
+                <div className="w-10 h-10 bg-primary/10 rounded-md flex items-center justify-center mb-4">
+                  <Star className="h-5 w-5 text-primary" />
                 </div>
-                <div className="absolute -top-3 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm">2</div>
-                <h3 className="text-xl font-semibold mb-4">Choose Provider</h3>
-                <p className="text-muted-foreground">
-                  Select from verified service providers based on ratings, reviews, and availability.
+                <span className="text-xs font-medium text-primary mb-3 block">STEP 2</span>
+                <h3 className="text-base font-medium mb-2">Pick Your Pro</h3>
+                <p className="text-muted-foreground text-sm">
+                  Compare ratings and reviews to choose your provider
                 </p>
               </div>
-            </motion.div>
+            </div>
 
             {/* Step 3 */}
-            <motion.div 
-              className="relative"
-              variants={fadeInUp}
-            >
-              <div className="bg-background rounded-xl p-6 text-center relative z-10 h-full glass-card hover:shadow-lg transition-all duration-300">
-                <div className="w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                  <Clock className="h-6 w-6 text-primary" />
+            <div className="relative z-10">
+              <div className="bg-white p-5 relative border border-gray-100 rounded-lg">
+                <div className="w-10 h-10 bg-primary/10 rounded-md flex items-center justify-center mb-4">
+                  <Clock className="h-5 w-5 text-primary" />
                 </div>
-                <div className="absolute -top-3 right-4 flex items-center justify-center w-8 h-8 rounded-full bg-primary text-white font-bold text-sm">3</div>
-                <h3 className="text-xl font-semibold mb-4">Book & Enjoy</h3>
-                <p className="text-muted-foreground">
-                  Schedule the service, make secure payment, and get quality service at your convenience.
+                <span className="text-xs font-medium text-primary mb-3 block">STEP 3</span>
+                <h3 className="text-base font-medium mb-2">Book & Relax</h3>
+                <p className="text-muted-foreground text-sm">
+                  Schedule, pay securely, and get the job done
                 </p>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
 
-          <motion.div 
-            className="text-center mt-12"
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.4 }}
-          >
-            <Link to="/how-it-works">
-              <Button className="rounded-full bg-gradient-primary hover:opacity-90">
-                Learn More About the Process
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
+          <div className="text-center mt-8">
+            <Link to="/how-it-works" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center">
+              Learn more about our process
+              <ArrowRight className="ml-1 h-4 w-4" />
             </Link>
-          </motion.div>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20 bg-background relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-primary opacity-[0.03] pointer-events-none"></div>
-        
-        <div className="container px-4 relative">
-          <div className="max-w-4xl mx-auto bg-gradient-to-br from-primary/10 via-secondary/5 to-background rounded-2xl p-8 md:p-12 border border-primary/10 relative overflow-hidden">
-            {/* Decorative elements */}
-            <div className="absolute -right-20 -bottom-20 w-64 h-64 bg-primary/10 rounded-full blur-3xl"></div>
-            <div className="absolute -left-20 -top-20 w-64 h-64 bg-secondary/10 rounded-full blur-3xl"></div>
+      <section className="py-16 md:py-20 bg-gray-50/50">
+        <div className="container px-6">
+          <div className="max-w-2xl mx-auto bg-white p-6 md:p-8 border border-gray-100 rounded-lg text-center">
+            <h2 className="text-2xl md:text-3xl font-bold mb-3">
+              Ready to get started?
+            </h2>
+            <p className="text-muted-foreground text-sm md:text-base mb-6">
+              Join our growing community of service providers and customers
+            </p>
             
-            <motion.div 
-              className="relative z-10 text-center"
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-            >
-              <h2 className="text-2xl md:text-4xl font-bold mb-4">
-                Ready to Find the <span className="text-gradient-primary">Perfect Service Provider?</span>
-              </h2>
-              <p className="text-muted-foreground mb-8 max-w-2xl mx-auto">
-                Join thousands of satisfied customers who found quality service providers through SevaBee
-              </p>
-              
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                <Link to="/services">
-                  <Button size="lg" className="w-full sm:w-auto bg-gradient-primary hover:opacity-90 rounded-full">
-                    Find Services Now
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Link>
-                <Link to="/become-provider">
-                  <Button variant="outline" size="lg" className="w-full sm:w-auto rounded-full">
-                    Become a Provider
-                  </Button>
-                </Link>
-              </div>
-            </motion.div>
+            <div className="space-y-3 sm:space-y-0 sm:space-x-3 flex flex-col sm:flex-row justify-center">
+              <Link to="/services">
+                <Button className="bg-primary hover:bg-primary/90 w-full sm:w-auto">
+                  Find a Service
+                </Button>
+              </Link>
+              <Link to="/become-provider">
+                <Button variant="outline" className="w-full sm:w-auto">
+                  Offer Services
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
       </section>

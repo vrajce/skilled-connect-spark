@@ -1,26 +1,34 @@
 import React, { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { ArrowRight, Star, MapPin, Clock, Shield, Zap, CheckCircle2, ThumbsUp, Search, Wrench, Flower2, Hammer, Sparkles, Scissors } from 'lucide-react';
+import { ArrowRight, Star, MapPin, Clock, Shield, Zap, CheckCircle2, ThumbsUp, Search, Wrench, Flower2, Hammer, Sparkles, Scissors, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
 // import BeeBackground from '@/components/BeeBackground';
 
 // Import helper utility for animations
 import { cn } from '@/lib/utils';
 
+interface ServiceCategory {
+  id: number;
+  name: string;
+  icon: string;
+  color: string;
+  description: string;
+}
+
+interface ImageData {
+  src: string;
+  alt: string;
+  caption: string;
+}
+
 // Service categories
-const serviceCategories = [
+const serviceCategories: ServiceCategory[] = [
   {
     id: 1,
     name: 'Plumbing',
@@ -97,7 +105,14 @@ const staggerContainer = {
   }
 };
 
-const Index = () => {
+const images: ImageData[] = [
+  { src: '/imgs/electrician.jpg', alt: 'Professional Electrician', caption: 'Expert Electrical Services' },
+  { src: '/imgs/plumber.jpg', alt: 'Professional Plumber', caption: 'Quality Plumbing Solutions' },
+  { src: '/imgs/mehendi.jpg', alt: 'Professional Mehendi Artist', caption: 'Beautiful Mehendi Designs' },
+  { src: '/imgs/photographer.jpg', alt: 'Professional Photographer', caption: 'Capture Your Moments' },
+];
+
+const Index: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
 
   // Parallax effect for hero section
@@ -118,62 +133,89 @@ const Index = () => {
   return (
     <>
       {/* Hero Section */}
-      <section className="min-h-[calc(100vh-4rem)] bg-background relative flex items-start md:items-center justify-center pt-16 md:pt-0 overflow-hidden">
+      <div className="min-h-[calc(100vh-4rem)] bg-background relative flex items-start md:items-center justify-center pt-16 md:pt-0 overflow-hidden">
         {/* Background animation */}
         {/* <BeeBackground /> */}
         
         <div className="container px-6 z-10">
-          <div className="max-w-3xl mx-auto md:ml-8 lg:ml-16 text-left">
-            <div className="inline-flex items-center gap-2 bg-primary/5 text-primary px-3 py-1 text-sm mb-8">
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
-              Available in your area
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+            {/* Hero Content */}
+            <div className="text-left">
+              <div className="inline-flex items-center gap-2 bg-primary/5 text-primary px-3 py-1 text-sm mb-8">
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-primary"></span>
+                Available in your area
+              </div>
+            
+              <h1 className="text-4xl md:text-6xl font-bold mb-5 text-foreground leading-tight">
+                Find Local Service<br />Providers You Can Trust
+              </h1>
+            
+              <p className="text-muted-foreground text-lg mb-8 max-w-lg">
+                Connect with verified local professionals for your home services, repairs, and more. Quick, reliable, and trusted by your community.
+              </p>
+            
+              <div className="flex flex-col sm:flex-row items-start gap-3">
+                <Link to="/services">
+                  <Button size="lg" className="bg-primary hover:bg-primary/90">
+                    Browse Services
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/become-provider">
+                  <Button variant="outline" size="lg">
+                    Join as Provider
+                  </Button>
+                </Link>
+              </div>
+
+              <div className="mt-10 space-y-2.5 text-sm text-muted-foreground">
+                <div className="flex items-center">
+                  <CheckCircle2 className="mr-2 h-4 w-4 text-primary/80" />
+                  <span>Background-checked professionals</span>
+                </div>
+                <div className="flex items-center">
+                  <ThumbsUp className="mr-2 h-4 w-4 text-primary/80" />
+                  <span>100% satisfaction guarantee</span>
+                </div>
+                <div className="flex items-center">
+                  <Shield className="mr-2 h-4 w-4 text-primary/80" />
+                  <span>Secure & hassle-free payments</span>
+                </div>
+              </div>
             </div>
-            
-            <h1 className="text-4xl md:text-6xl font-bold mb-5 text-foreground leading-tight">
-              Find Local Service<br />Providers You Can Trust
-            </h1>
-            
-            <p className="text-muted-foreground text-lg mb-8 max-w-lg">
-              Connect with verified local professionals for your home services, repairs, and more. Quick, reliable, and trusted by your community.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row items-start gap-3">
-              <Link to="/services">
-                <Button size="lg" className="bg-primary hover:bg-primary/90">
-                  Browse Services
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </Link>
-              <Link to="/become-provider">
-                <Button variant="outline" size="lg">
-                  Join as Provider
-                </Button>
-              </Link>
-            </div>
-            
-            <div className="mt-10 space-y-2.5 text-sm text-muted-foreground">
-              <div className="flex items-center">
-                <CheckCircle2 className="mr-2 h-4 w-4 text-primary/80" />
-                <span>Background-checked professionals</span>
-              </div>
-              <div className="flex items-center">
-                <ThumbsUp className="mr-2 h-4 w-4 text-primary/80" />
-                <span>100% satisfaction guarantee</span>
-              </div>
-              <div className="flex items-center">
-                <Shield className="mr-2 h-4 w-4 text-primary/80" />
-                <span>Secure & hassle-free payments</span>
-              </div>
+
+            {/* Image Carousel */}
+            <div className="hidden md:block relative rounded-xl overflow-hidden bg-background border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
+              <Carousel className="w-full" opts={{ loop: true, align: "start" }}>
+                <CarouselContent>
+                  {images.map((image, index) => (
+                    <CarouselItem key={index} className="basis-full">
+                      <div className="relative aspect-[4/3] overflow-hidden">
+                        <img
+                          src={image.src}
+                          alt={image.alt}
+                          className="object-cover w-full h-full transition-transform duration-500 hover:scale-105"
+                        />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 via-black/30 to-transparent">
+                          <p className="text-white text-sm font-medium tracking-wide">{image.caption}</p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="-left-2 h-12 w-12 bg-background/90 border-2 border-border/50 shadow-lg opacity-0 transition-opacity group-hover:opacity-100 hover:bg-background hover:border-border" />
+                <CarouselNext className="-right-2 h-12 w-12 bg-background/90 border-2 border-border/50 shadow-lg opacity-0 transition-opacity group-hover:opacity-100 hover:bg-background hover:border-border" />
+              </Carousel>
             </div>
           </div>
         </div>
-        
+
         {/* Simple bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-12 bg-gradient-to-t from-background to-transparent opacity-75"></div>
-      </section>
+      </div>
 
       {/* Service Categories Section */}
-      <section className="py-16 md:py-20 bg-gray-50/50">
+      <div className="py-16 md:py-20 bg-gray-50/50">
         <div className="container px-6">
           <div className="max-w-2xl mx-auto mb-12">
             <h2 className="text-3xl md:text-4xl font-bold mb-4 text-center">
@@ -197,7 +239,7 @@ const Index = () => {
                       <p className="text-muted-foreground text-sm mb-4">{category.description}</p>
                       <Button variant="ghost" size="sm" className="px-0 hover:bg-transparent hover:text-primary">
                         View Details
-                        <ArrowRight className="ml-1.5 h-4 w-4" />
+                        <ArrowRight className="ml-2 h-4 w-4" />
                       </Button>
                     </CardContent>
                   </Card>
@@ -205,19 +247,11 @@ const Index = () => {
               </div>
             ))}
           </div>
-
-          <div className="mt-10 text-center">
-            <Link to="/services" className="text-sm text-muted-foreground hover:text-primary inline-flex items-center">
-              View all available services
-              <ArrowRight className="ml-1 h-4 w-4" />
-            </Link>
-          </div>
         </div>
-      </section>
+      </div>
 
       {/* How It Works Section */}
-      <section className="py-16 md:py-20 bg-white border-y border-gray-100">
-        
+      <div className="py-16 md:py-20 bg-white border-y border-gray-100">
         <div className="container px-4 relative z-10">
           <div className="max-w-2xl mx-auto mb-12">
             <h2 className="text-2xl md:text-3xl font-bold mb-3 text-center">
@@ -250,12 +284,12 @@ const Index = () => {
             <div className="relative z-10">
               <div className="bg-white p-5 relative border border-gray-100 rounded-lg">
                 <div className="w-10 h-10 bg-primary/10 rounded-md flex items-center justify-center mb-4">
-                  <Star className="h-5 w-5 text-primary" />
+                  <Clock className="h-5 w-5 text-primary" />
                 </div>
                 <span className="text-xs font-medium text-primary mb-3 block">STEP 2</span>
-                <h3 className="text-base font-medium mb-2">Pick Your Pro</h3>
+                <h3 className="text-base font-medium mb-2">Book a Time Slot</h3>
                 <p className="text-muted-foreground text-sm">
-                  Compare ratings and reviews to choose your provider
+                  Select a convenient time slot for your service
                 </p>
               </div>
             </div>
@@ -264,12 +298,12 @@ const Index = () => {
             <div className="relative z-10">
               <div className="bg-white p-5 relative border border-gray-100 rounded-lg">
                 <div className="w-10 h-10 bg-primary/10 rounded-md flex items-center justify-center mb-4">
-                  <Clock className="h-5 w-5 text-primary" />
+                  <CreditCard className="h-5 w-5 text-primary" />
                 </div>
                 <span className="text-xs font-medium text-primary mb-3 block">STEP 3</span>
-                <h3 className="text-base font-medium mb-2">Book & Relax</h3>
+                <h3 className="text-base font-medium mb-2">Pay Securely</h3>
                 <p className="text-muted-foreground text-sm">
-                  Schedule, pay securely, and get the job done
+                  Make a secure payment and get service confirmation
                 </p>
               </div>
             </div>
@@ -282,10 +316,10 @@ const Index = () => {
             </Link>
           </div>
         </div>
-      </section>
+      </div>
 
       {/* CTA Section */}
-      <section className="py-16 md:py-20 bg-gray-50/50">
+      <div className="py-16 md:py-20 bg-gray-50/50">
         <div className="container px-6">
           <div className="max-w-2xl mx-auto bg-white p-6 md:p-8 border border-gray-100 rounded-lg text-center">
             <h2 className="text-2xl md:text-3xl font-bold mb-3">
@@ -309,7 +343,7 @@ const Index = () => {
             </div>
           </div>
         </div>
-      </section>
+      </div>
     </>
   );
 };

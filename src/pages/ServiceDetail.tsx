@@ -236,14 +236,14 @@ const ServiceDetail = () => {
     try {
       const formattedDate = format(bookingDate, 'yyyy-MM-dd');
       
-      // Get all pending or confirmed bookings for the selected date
+      // Get all active bookings for the selected date (pending, confirmed, or completed)
       const { data, error } = await supabase
         .from('bookings')
-        .select('preferred_time')
+        .select('preferred_time, status')
         .eq('provider_id', service.provider.id)
         .eq('service_id', service.id)
         .eq('booking_date', formattedDate)
-        .in('status', ['pending', 'confirmed']);
+        .neq('status', 'cancelled');
 
       if (error) {
         console.error('Error fetching booked slots:', error);
@@ -255,7 +255,8 @@ const ServiceDetail = () => {
         return;
       }
 
-      const bookedTimes = data?.map(booking => booking.preferred_time) || [];
+      // Filter out any null values and get unique time slots
+      const bookedTimes = [...new Set(data?.map(booking => booking.preferred_time).filter(Boolean) || [])];
       console.log('Updated booked slots:', bookedTimes);
       setBookedSlots(bookedTimes);
       setSlotsLoading(false);
@@ -304,24 +305,25 @@ const ServiceDetail = () => {
 
       const formattedDate = format(bookingDate, 'yyyy-MM-dd');
       
-      // Check for existing bookings
+      // Check for any existing active bookings for this slot
       const { data: existingBooking, error: checkError } = await supabase
         .from('bookings')
-        .select('id')
+        .select('id, status')
         .eq('provider_id', service.provider.id)
         .eq('service_id', service.id)
         .eq('booking_date', formattedDate)
         .eq('preferred_time', timeSlot)
-        .eq('status', 'pending')
-        .single();
+        .neq('status', 'cancelled')
+        .maybeSingle();
 
       if (checkError && checkError.code !== 'PGRST116') {
         throw checkError;
       }
 
-      if (existingBooking) {
+      if (existingBooking?.id) {
         setTimeSlot(selectedTimeSlot); // Restore the time slot selection if booking fails
-        throw new Error('This time slot is already booked. Please select a different time.');
+        const status = existingBooking.status === 'completed' ? 'completed' : 'booked';
+        throw new Error(`This time slot is already ${status}. Please select a different time.`);
       }
       
       // Create new booking
@@ -519,11 +521,13 @@ const ServiceDetail = () => {
                           >
                             <span>{slot.label}</span>
                             {isBooked ? (
-                              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded">
+                              <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded inline-flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-gray-400"></span>
                                 Unavailable
                               </span>
                             ) : (
-                              <span className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded">
+                              <span className="text-xs bg-green-50 text-green-600 px-2 py-0.5 rounded inline-flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
                                 Available
                               </span>
                             )}

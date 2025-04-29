@@ -337,7 +337,7 @@ const ProviderDetail = () => {
                         {provider.provider_services.map((service) => (
                           <Link
                             key={service.id}
-                            to={`/service/${service.id}`}
+                            to={`/services/${service.id}`}
                             className="block"
                           >
                             <div

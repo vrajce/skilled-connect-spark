@@ -229,7 +229,7 @@ const Index: React.FC = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {serviceCategories.map((category, index) => (
               <div key={category.id} className="group">
-                <Link to={`/services/${category.name.toLowerCase()}`} className="block">
+                <Link to={`/services/`} className="block">
                   <Card className="h-full hover:shadow-md transition-shadow duration-200 border border-gray-100">
                     <CardContent className="p-5">
                       <div className={`${category.color} w-12 h-12 rounded-lg flex items-center justify-center mb-4 text-white`}>

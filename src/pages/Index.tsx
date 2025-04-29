@@ -114,6 +114,24 @@ const images: ImageData[] = [
 
 const Index: React.FC = () => {
   const heroRef = useRef<HTMLDivElement>(null);
+  const [api, setApi] = React.useState<any>();
+  const [current, setCurrent] = React.useState(0);
+
+  useEffect(() => {
+    if (!api) return;
+
+    const interval = setInterval(() => {
+      api.scrollNext();
+    }, 2000);
+
+    api.on('select', () => {
+      setCurrent(api.selectedScrollSnap());
+    });
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [api]);
 
   // Parallax effect for hero section
   useEffect(() => {
@@ -186,7 +204,14 @@ const Index: React.FC = () => {
 
             {/* Image Carousel */}
             <div className="hidden md:block relative rounded-xl overflow-hidden bg-background border border-border/50 shadow-lg hover:shadow-xl transition-all duration-300">
-              <Carousel className="w-full" opts={{ loop: true, align: "start" }}>
+              <Carousel 
+                className="w-full group relative" 
+                opts={{
+                  loop: true,
+                  align: "start",
+                }}
+                setApi={setApi}
+              >
                 <CarouselContent>
                   {images.map((image, index) => (
                     <CarouselItem key={index} className="basis-full">

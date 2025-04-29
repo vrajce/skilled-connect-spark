@@ -357,7 +357,7 @@ const Services = () => {
                             </div>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center">
-                                <IndianRupee className="h-4 w-4 text-muted-foreground mr-1" />
+                                {/* <IndianRupee className="h-4 w-4 text-muted-foreground mr-1" /> */}
                                 <span className="font-medium">₹{service.price}</span>
                               </div>
                               <div className="flex items-center text-muted-foreground">
